@@ -9,10 +9,15 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import static lombok.AccessLevel.PRIVATE;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
+import lombok.experimental.Accessors;
 
+@ToString
+@Getter
+@Accessors(fluent = true)
 @AllArgsConstructor
-@NoArgsConstructor(access = PRIVATE)
 @JsonTypeName("issue")
 @JsonTypeInfo(include = WRAPPER_OBJECT, use = NAME)
 public class CreateIssue {
@@ -32,7 +37,7 @@ public class CreateIssue {
 
     @JsonUnwrapped
     @JsonProperty
-    private CustomFields custom;
+    private Coordinates coords;
 
 
 }

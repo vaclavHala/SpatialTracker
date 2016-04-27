@@ -9,9 +9,12 @@ import javax.ws.rs.ext.Provider;
 @Provider
 public class ClientProducer {
 
+    private final ClientBuilder builder =
+            ClientBuilder.newBuilder();
+
     @Produces
     public Client make() {
-        return ClientBuilder.newClient();
+        return this.builder.build();
     }
 
     public void destroy(@Disposes final Client client) {
