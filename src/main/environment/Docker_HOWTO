@@ -1,0 +1,20 @@
+-- Redmine via Docker HOWTO --
+sudo docker run --name postgres -e POSTGRES_USER=redmine postgres
+    // will run interactive, can be run in background via -d
+
+    // wait for postgres to fire up
+sudo docker run --name redmine --link postgres:postgres -p 3000:3000 redmine
+    // for background also -d
+    // for mapping to different port -p <other port>:3000
+
+go to http://localhost:3000/settings in browser
+    //login:pass admin:admin
+tab API, enable REST API, save
+
+    for redmine webserver and db logging
+in /path/to/redmine/config copy additionalConfig.rb and uncomment debug logging
+
+    for logging jax rs http messages, in wildfly standalone.xml
+<logger category="org.apache.http.wire">
+    <level name="DEBUG"/>
+</logger>
