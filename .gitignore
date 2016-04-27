@@ -26,3 +26,6 @@ target/
 
 # Idea
 *.iml
+
+#Netbeans
+nb-configuration.xml
