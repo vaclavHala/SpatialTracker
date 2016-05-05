@@ -1,0 +1,77 @@
+FORMAT: 1A
+
+# Users API
+
+For now we go with HTTP Basic Auth,
+so all calls asume Authentication header is present
+
+For further versions either:
+- HMAC http://restcookbook.com/Basics/loggingin/
+- SSL 
+- OAuth
+
+# All Users [/user]
+## Register New [POST]
++ Request (application/json)
+    + Attributes (object)
+        + login: dragon (string, required)
+        + email: dragon@dungeon.com (string, required)
+        + password: sEcrEt123 (string, required)
+
++ Response 201 
+
++ Response 409 (application/json)
+    + Attributes (object)
+        + cause: name taken (string)
+
+
+# Single User [/user/{id}]
+    Anyone can view details of any user.
+    To edit or delete user credentials for that user must be supplied.
++ Parameters
+
+    + id: 123 (number) Id of the user to act upon
+    
+## Show Details [GET]
++ Response 200 (application/json)
+    + Attributes (object)
+        + login: CoolKidO (string, required)
+        + first_name: Pepa (string)
+        + last_name: Zdepa (string)
+        + email: foo@bar.baz (string)
+        + icon: binary 
+    
++ Response 404
+    User with this id does not exist
+    + Body
+
+## Update User Details [PUT]
++ Response 204
+    User updated succesfully
+    + Body
+
++ Response 403
+    Can't edit other users
+    + Body
+
+## Delete User [DELETE]
++ Response 204
+    User deleted succesfully
+    + Body
+
++ Response 403
+    Can't delete other users
+    + Body
+
+# Login [/user/login]
+    The form is displayed by client, no need to ask server for it.
+    User will fill the form and send it to server.
+## Try to Login [POST]
++ Response 200 (application/json)
+    If such combination of login and pass exists we return users id for reference.
+    + Attributes (object)
+        + id: 123 (string) id associated with the provided login / pass 
+
++ Response 403 
+    No such combination of login / pass
+    + Body
