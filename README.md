@@ -4,3 +4,9 @@
 
 - GDrive with diagrams https://drive.google.com/folderview?id=0B_1Pa062a34BdjhMVGlmY3JWQkE&usp=sharing
 - View and edit using https://www.draw.io/
+
+## Apiary.io Mock
+
+- Users API: http://private-3f578-hello165.apiary-mock.com/
+- runs online, use for testing and designing with the API
+- import *apiary.apib* file to apiary, play with and modify, commit
