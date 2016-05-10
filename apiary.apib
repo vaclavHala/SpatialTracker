@@ -10,7 +10,9 @@ For further versions either:
 - SSL 
 - OAuth
 
-# All Users [/user]
+# New User [/user]
+Create a new account for the user
+
 ## Register New [POST]
 + Request (application/json)
     + Attributes (object)
@@ -18,19 +20,24 @@ For further versions either:
         + email: dragon@dungeon.com (string, required)
         + password: sEcrEt123 (string, required)
 
-+ Response 201 
++ Response 201
 
+    User account was created
+    
+    + Body
+    
 + Response 409 (application/json)
     + Attributes (object)
         + cause: name taken (string)
 
 
-# Single User [/user/{id}]
+# Some User [/user/{login}]
     Anyone can view details of any user.
-    To edit or delete user credentials for that user must be supplied.
+    To edit or delete user credentials for that user must
+    be supplied instead of just login.
 + Parameters
 
-    + id: 123 (number) Id of the user to act upon
+    + login: pepa.zdepa (string) Users login processed to be URL friendly
     
 ## Show Details [GET]
 + Response 200 (application/json)
@@ -42,36 +49,62 @@ For further versions either:
         + icon: binary 
     
 + Response 404
-    User with this id does not exist
+
+    User with this login does not exist
+    
     + Body
 
+# Current User [/user/me]
+    Credentials are included in the request and 
+    the server will operate on the user with matching credentials,
+    if such user exists.
+    It is up to the client app to display authentication form
+    when action requiring authentication is invoked and 
+    the current user is not known.
+    It should then remember the entered credentials
+    for further requests requiring authentication.
+
+## Show Details [GET]
+
++ Response 200 (application/json)
+
+    The Response looks exactly the same as if GET
+    using the current users login was called.
+    However the client app needs to recognize we are
+    looking at the current user (/me), so it should provide
+    extra buttons for editing and deleting the user.
+    
+    + Body
+    
++ Response 403 (application/json)
+
+    No user with matching credentials exists
+    
+    + Body
+    
 ## Update User Details [PUT]
 + Response 204
+
+    TODO Do we allow editing of user as a whole, by parts...
     User updated succesfully
+    
     + Body
 
 + Response 403
-    Can't edit other users
+
+    No user with matching credentials exists
+    
     + Body
 
 ## Delete User [DELETE]
 + Response 204
+
     User deleted succesfully
+    
     + Body
 
 + Response 403
-    Can't delete other users
-    + Body
 
-# Login [/user/login]
-    The form is displayed by client, no need to ask server for it.
-    User will fill the form and send it to server.
-## Try to Login [POST]
-+ Response 200 (application/json)
-    If such combination of login and pass exists we return users id for reference.
-    + Attributes (object)
-        + id: 123 (string) id associated with the provided login / pass 
-
-+ Response 403 
-    No such combination of login / pass
+    No user with matching credentials exists
+    
     + Body
