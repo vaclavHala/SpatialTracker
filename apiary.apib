@@ -26,9 +26,12 @@ Create a new account for the user
     
     + Body
     
-+ Response 409 (application/json)
++ Response 400 (application/json)
     + Attributes (object)
-        + cause: name taken (string)
+        + errors (array)
+            + name taken (string)
+            + invalid email (string)
+            + missing password (string)
 
 
 # Some User [/user/{login}]
