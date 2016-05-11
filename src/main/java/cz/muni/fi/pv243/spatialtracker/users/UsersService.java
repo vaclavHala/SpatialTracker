@@ -5,6 +5,7 @@ import cz.muni.fi.pv243.spatialtracker.config.Property;
 import static cz.muni.fi.pv243.spatialtracker.config.PropertyType.REDMINE_API_KEY;
 import static cz.muni.fi.pv243.spatialtracker.config.PropertyType.REDMINE_BASE_URL;
 import cz.muni.fi.pv243.spatialtracker.users.dto.*;
+import static java.lang.String.format;
 import java.util.Base64;
 import java.util.List;
 import javax.ejb.Stateless;
@@ -117,27 +118,19 @@ public class UsersService {
     @Produces(APPLICATION_JSON)
     public Response detailsMe(final @HeaderParam(AUTHORIZATION) String currentUserBasicAuth) {
         String currentLogin = this.decodeBasicAuthLogin(currentUserBasicAuth);
-        if(currentLogin == null){
-            log.info("Got request for current user with invalid Auth header value: {}",
+        if (currentLogin == null) {
+            log.info("Got details request for current user with invalid Auth header value: {}",
                      currentUserBasicAuth);
-            return Response.status(401).build();
+            return Response.status(403).build();
         }
 
         log.info("Request to display current user: {}", currentLogin);
-        WebTarget target = this.restClient.target(this.redmineUrl + "users/current.json");
-        Response redmineResponse = target.request(APPLICATION_JSON)
-                                         .header(AUTHORIZATION,
-                                                 currentUserBasicAuth)
-                                         .buildGet()
-                                         .invoke();
-        if (redmineResponse.getStatus() == 401) {
+        RedmineUserDetails redmineUser = this.getCurrentRedmineUser(currentUserBasicAuth);
+        if (redmineUser == null) {
             log.info("Failed to display as current user: {}", currentLogin);
-            return Response.status(401).build();
+            return Response.status(403).build();
         } else {
             log.info("User accessed as current: {}", currentLogin);
-            RedmineUserDetails redmineUser =
-                    redmineResponse.readEntity(RedmineUserDetailsCurrentWrapper.class)
-                                   .user();
             return Response.ok(this.mapRedmineUser(redmineUser)).build();
         }
     }
@@ -153,23 +146,59 @@ public class UsersService {
     @PUT
     @Path("/me")
     @Consumes(APPLICATION_JSON)
-    public Response update(UserCreate newUser) {
+    public Response updateMe(UserCreate newUser) {
         System.out.println("update me");
         return null;
     }
 
     @DELETE
     @Path("/me")
-    public Response delete() {
-        System.out.println("delete me");
-        return null;
+    public Response deleteMe(final @HeaderParam(AUTHORIZATION) String currentUserBasicAuth) {
+        String currentLogin = this.decodeBasicAuthLogin(currentUserBasicAuth);
+        if (currentLogin == null) {
+            log.info("Got delete request for current user with invalid Auth header value: {}",
+                     currentUserBasicAuth);
+            return Response.status(403).build();
+        }
+
+        log.info("Request to delete current user: {}", currentLogin);
+        RedmineUserDetails redmineUser = this.getCurrentRedmineUser(currentUserBasicAuth);
+        String deleteUserUri = format("%susers/%d.json",
+                                      this.redmineUrl,
+                                      redmineUser.id());
+        WebTarget target = this.restClient.target(deleteUserUri);
+        Response redmineResponse = target.request()
+                      .header("X-Redmine-API-Key", this.redmineKey)
+                                         .buildDelete()
+                                         .invoke();
+        if (redmineResponse.getStatus() == 200) {
+            log.info("User was deleted in Redmine");
+            redmineResponse.close();
+            return Response.noContent().build();
+        } else {
+            return Response.status(403).build();
+        }
     }
 
-    private String decodeBasicAuthLogin(final String authHeaderValue){
-        try{
+    private RedmineUserDetails getCurrentRedmineUser(final String basicAuthHeaderValue) {
+        WebTarget target = this.restClient.target(this.redmineUrl + "users/current.json");
+        Response redmineResponse = target.request(APPLICATION_JSON)
+                                         .header(AUTHORIZATION,
+                                                 basicAuthHeaderValue)
+                                         .buildGet()
+                                         .invoke();
+        if (redmineResponse.getStatus() == 401) {
+            return null;
+        } else {
+            return redmineResponse.readEntity(RedmineUserDetailsCurrentWrapper.class).user();
+        }
+    }
+
+    private String decodeBasicAuthLogin(final String authHeaderValue) {
+        try {
             String loginPassAuthPart = authHeaderValue.split(" ")[1];
             return new String(Base64.getDecoder().decode(loginPassAuthPart)).split(":")[0];
-        } catch (IndexOutOfBoundsException | IllegalArgumentException | NullPointerException e){
+        } catch (IndexOutOfBoundsException | IllegalArgumentException | NullPointerException e) {
             return null;
         }
     }
