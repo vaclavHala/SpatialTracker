@@ -4,8 +4,12 @@ import cz.muni.fi.pv243.spatialtracker.ErrorReport;
 import cz.muni.fi.pv243.spatialtracker.config.Property;
 import static cz.muni.fi.pv243.spatialtracker.config.PropertyType.REDMINE_API_KEY;
 import static cz.muni.fi.pv243.spatialtracker.config.PropertyType.REDMINE_BASE_URL;
-import cz.muni.fi.pv243.spatialtracker.users.dto.CreateUser;
-import cz.muni.fi.pv243.spatialtracker.users.dto.RedmineCreateUser;
+import cz.muni.fi.pv243.spatialtracker.users.dto.UserCreate;
+import cz.muni.fi.pv243.spatialtracker.users.dto.RedmineUserCreate;
+import cz.muni.fi.pv243.spatialtracker.users.dto.RedmineUsersDetails;
+import cz.muni.fi.pv243.spatialtracker.users.dto.RedmineUsersDetails.UserMatch;
+import cz.muni.fi.pv243.spatialtracker.users.dto.UserDetails;
+import java.util.List;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -17,7 +21,6 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Context;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import lombok.extern.slf4j.Slf4j;
 
@@ -42,10 +45,10 @@ public class UsersService {
     @Consumes(APPLICATION_JSON)
     @Produces(APPLICATION_JSON)
     public Response register(
-            final @Valid @NotNull CreateUser newUser,
+            final @Valid @NotNull UserCreate newUser,
             final @Context UriInfo userApiLocation) {
         log.info("New user registration reguest: {}", newUser);
-        RedmineCreateUser redmineNewUser = new RedmineCreateUser(newUser.login(),
+        RedmineUserCreate redmineNewUser = new RedmineUserCreate(newUser.login(),
                                                                  newUser.password(),
                                                                  EMPTY,
                                                                  EMPTY,
@@ -82,15 +85,41 @@ public class UsersService {
     @GET
     @Path("/{login}")
     @Produces(APPLICATION_JSON)
-    public Response details(@PathParam("login") String forLogin) {
-        System.out.println("display " + forLogin);
+    public Response details(final @PathParam("login") String forLogin) {
+        log.info("Request to display user: {}", forLogin);
+        WebTarget target = this.restClient.target(this.redmineUrl + "users.json")
+                                          .queryParam("name", forLogin)
+                                          .queryParam("limit", 1);
+        RedmineUsersDetails redmineResponse = target.request(APPLICATION_JSON)
+                                                    .header("X-Redmine-API-Key", this.redmineKey)
+                                                    .buildGet()
+                                                    .invoke(RedmineUsersDetails.class);
+        UserDetails user = this.extractUser(forLogin, redmineResponse.matchedUsers());
+        if (user != null) {
+            log.info("User <{}> was found", forLogin);
+            return Response.ok(user).build();
+        } else {
+            log.info("User <{}> does not exist", forLogin);
+            return Response.status(404).build();
+        }
+    }
+
+    private UserDetails extractUser(final String login, final List<UserMatch> foundUsers) {
+        for (UserMatch match : foundUsers) {
+            if (match.login().equals(login)) {
+                return new UserDetails(match.login(),
+                                       match.firstname().equals(EMPTY) ? null : match.firstname(),
+                                       match.lastname().equals(EMPTY) ? null : match.lastname(),
+                                       match.email(),
+                                       match.icon());
+            }
+        }
         return null;
     }
 
     @GET
     @Path("/me")
-    @Produces(APPLICATION_JSON)
-    public Response details(final @Valid CreateUser newUser) {
+    public Response details() {
         System.out.println("display current user");
         return null;
     }
@@ -98,7 +127,7 @@ public class UsersService {
     @PUT
     @Path("/me")
     @Consumes(APPLICATION_JSON)
-    public Response update(CreateUser newUser) {
+    public Response update(UserCreate newUser) {
         System.out.println("update me");
         return null;
     }

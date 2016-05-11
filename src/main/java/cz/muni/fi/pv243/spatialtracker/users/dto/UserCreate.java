@@ -22,7 +22,7 @@ import lombok.experimental.Accessors;
 @Accessors(fluent = true)
 @AllArgsConstructor
 @NoArgsConstructor(access = PRIVATE)
-public class CreateUser {
+public class UserCreate {
 
     @NotNull(message = "{user.login.empty}")
     @JsonProperty("login")
