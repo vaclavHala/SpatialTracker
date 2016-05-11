@@ -5,8 +5,9 @@ import javax.enterprise.inject.Produces;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.ext.Provider;
+import lombok.extern.slf4j.Slf4j;
 
-@Provider
+@Slf4j
 public class ClientProducer {
 
     private final ClientBuilder builder =
@@ -14,10 +15,13 @@ public class ClientProducer {
 
     @Produces
     public Client make() {
-        return this.builder.build();
+        Client client = this.builder.build();
+        log.debug("Create new REST Client ({})", System.identityHashCode(client));
+        return client;
     }
 
-    public void destroy(@Disposes final Client client) {
+    public void destroy(final @Disposes Client client) {
+        log.debug("Close REST Client ({})", System.identityHashCode(client));
         client.close();
     }
 }

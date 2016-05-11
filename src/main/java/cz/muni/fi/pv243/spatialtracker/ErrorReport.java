@@ -12,12 +12,13 @@ import javax.validation.constraints.NotNull;
 import static lombok.AccessLevel.PRIVATE;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
-
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor(access = PRIVATE)
 public class ErrorReport {
 
         @JsonProperty(value = "errors")
-        private List<String> violations;
+        private List<String> errors;
 }
