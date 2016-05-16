@@ -9,7 +9,6 @@ import lombok.experimental.Accessors;
 
 @ToString
 @Getter
-@Accessors(fluent = true)
 @AllArgsConstructor
 @JsonSerialize(using = CoordinatesSerializer.class)
 @JsonDeserialize(using = CoordinatesDeserializer.class)

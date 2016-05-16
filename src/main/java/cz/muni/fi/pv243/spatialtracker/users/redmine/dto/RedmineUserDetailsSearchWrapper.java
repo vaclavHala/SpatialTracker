@@ -1,4 +1,4 @@
-package cz.muni.fi.pv243.spatialtracker.users.dto;
+package cz.muni.fi.pv243.spatialtracker.users.redmine.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -11,7 +11,6 @@ import lombok.experimental.Accessors;
 
 @ToString
 @Getter
-@Accessors(fluent = true)
 @NoArgsConstructor(access = PRIVATE)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class RedmineUserDetailsSearchWrapper {

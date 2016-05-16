@@ -3,12 +3,15 @@ package cz.muni.fi.pv243.spatialtracker;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
-import lombok.AllArgsConstructor;
+import static lombok.AccessLevel.PRIVATE;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @ToString
-@AllArgsConstructor
-public class ErrorReport {
+@Getter
+@NoArgsConstructor(access = PRIVATE)
+public class RedmineErrorReport {
 
         @JsonProperty(value = "errors")
         private List<String> errors;

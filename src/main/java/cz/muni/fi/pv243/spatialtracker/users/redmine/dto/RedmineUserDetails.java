@@ -1,15 +1,15 @@
-package cz.muni.fi.pv243.spatialtracker.users.dto;
+package cz.muni.fi.pv243.spatialtracker.users.redmine.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import cz.muni.fi.pv243.spatialtracker.users.dto.RawIcon;
 import static lombok.AccessLevel.PRIVATE;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
 @Getter
-@Accessors(fluent = true)
 @NoArgsConstructor(access = PRIVATE)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class RedmineUserDetails {

@@ -9,11 +9,10 @@ import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
 @Provider
-public class JsonErrorMapper implements ExceptionMapper<ConstraintViolationException>{
+public class ConstraintViolationMapper implements ExceptionMapper<ConstraintViolationException>{
 
     @Override
     public Response toResponse(final ConstraintViolationException exception) {
-        exception.getConstraintViolations().forEach(System.out::println);
         ErrorReport report =
                 new ErrorReport(exception.getConstraintViolations().stream()
                 .map((ConstraintViolation<?> v) -> v.getMessage())

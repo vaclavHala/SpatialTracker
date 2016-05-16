@@ -16,7 +16,6 @@ import lombok.experimental.Accessors;
 
 @ToString
 @Getter
-@Accessors(fluent = true)
 @AllArgsConstructor
 @JsonTypeName("issue")
 @JsonTypeInfo(include = WRAPPER_OBJECT, use = NAME)

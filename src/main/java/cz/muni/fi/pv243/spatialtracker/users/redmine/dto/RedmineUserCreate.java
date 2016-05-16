@@ -1,5 +1,5 @@
 
-package cz.muni.fi.pv243.spatialtracker.users.dto;
+package cz.muni.fi.pv243.spatialtracker.users.redmine.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;

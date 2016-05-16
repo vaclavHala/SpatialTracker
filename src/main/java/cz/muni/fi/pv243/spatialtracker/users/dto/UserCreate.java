@@ -19,7 +19,6 @@ import lombok.experimental.Accessors;
 
 @ToString
 @Getter
-@Accessors(fluent = true)
 @AllArgsConstructor
 @NoArgsConstructor(access = PRIVATE)
 public class UserCreate {

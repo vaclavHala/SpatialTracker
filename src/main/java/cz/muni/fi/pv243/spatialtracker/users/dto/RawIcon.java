@@ -13,7 +13,6 @@ import lombok.experimental.Accessors;
  */
 @ToString
 @Getter
-@Accessors(fluent = true)
 @AllArgsConstructor
 @JsonSerialize(using = IconSerializer.class)
 @JsonDeserialize(using = IconDeserializer.class)
