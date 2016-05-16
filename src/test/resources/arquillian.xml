@@ -3,5 +3,34 @@
     xsi:schemaLocation="
         http://jboss.org/schema/arquillian
         http://jboss.org/schema/arquillian/arquillian_1_0.xsd">
-    <container qualifier="wf-managed" default="true"/>
+
+    <defaultProtocol type="Servlet 3.0" />
+
+    <container qualifier="wf-remote" default="true"/>
+
+    <extension qualifier="docker">
+      <!--<property name="serverVersion">1.10.3</property>-->
+      <property name="serverUri">tcp://localhost:2375</property>
+      <property name="clean">true</property>
+      <property name="autoStartContainers">redmine-aq</property>
+      <property name="dockerContainers">
+          postgres-aq:
+            image: postgres
+            await:
+              strategy: polling
+            env: []
+          redmine-aq:
+            image: redmine
+            links:
+                - postgres-aq:postgres-aq
+            portBindings: [3000/tcp]
+            await:
+                # Aq Cube claims to have http strategy which would be perfect here,
+                # but again it is not in the available release yet
+                strategy: polling
+                sleepPollingTime: 1 s
+                iterations: 20
+      </property>
+            <!--publishAllPorts: true-->
+  </extension>
 </arquillian>

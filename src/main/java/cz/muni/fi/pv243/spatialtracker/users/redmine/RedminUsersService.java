@@ -1,6 +1,5 @@
 package cz.muni.fi.pv243.spatialtracker.users.redmine;
 
-import cz.muni.fi.pv243.spatialtracker.ErrorReport;
 import cz.muni.fi.pv243.spatialtracker.RedmineErrorReport;
 import cz.muni.fi.pv243.spatialtracker.MulticauseError;
 import cz.muni.fi.pv243.spatialtracker.config.Property;

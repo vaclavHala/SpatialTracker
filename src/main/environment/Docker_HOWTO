@@ -18,3 +18,11 @@ in /path/to/redmine/config copy additionalConfig.rb and uncomment debug logging
 <logger category="org.apache.http.wire">
     <level name="DEBUG"/>
 </logger>
+
+    To enable docker operation without needing root, put
+DOCKER_OPTS="-H tcp://127.0.0.1:2375 -H unix:///var/run/docker.sock"
+    into /etc/default/docker
+    then include -H tcp://127.0.0.1:2375 in every command, will work without root
+    or define alias for the session
+alias dockertcp='docker -H tcp://127.0.0.1:2375'
+    might not work in bash, ok in zsh
