@@ -1,11 +1,14 @@
 package cz.muni.fi.pv243.spatialtracker.users.redmine;
 
+import cz.muni.fi.pv243.spatialtracker.Closeable;
+import static cz.muni.fi.pv243.spatialtracker.Closeable.closeable;
 import cz.muni.fi.pv243.spatialtracker.RedmineErrorReport;
 import cz.muni.fi.pv243.spatialtracker.MulticauseError;
 import cz.muni.fi.pv243.spatialtracker.config.Property;
 import cz.muni.fi.pv243.spatialtracker.users.UserService;
 import static cz.muni.fi.pv243.spatialtracker.config.PropertyType.REDMINE_API_KEY;
 import static cz.muni.fi.pv243.spatialtracker.config.PropertyType.REDMINE_BASE_URL;
+import static cz.muni.fi.pv243.spatialtracker.users.BasicAuthUtils.assembleBasicAuthHeader;
 import cz.muni.fi.pv243.spatialtracker.users.dto.*;
 import cz.muni.fi.pv243.spatialtracker.users.redmine.dto.RedmineUserCreate;
 import cz.muni.fi.pv243.spatialtracker.users.redmine.dto.RedmineUserDetails;
@@ -47,18 +50,19 @@ public class RedmineUserService implements UserService {
                                                                  EMPTY,
                                                                  newUser.email());
         WebTarget target = this.restClient.target(this.redmineUrl + "users.json");
-        Response redmineResponse = null;
-        redmineResponse = target.request(APPLICATION_JSON)
+        try (Closeable<Response> redmineResponse =
+                closeable(target.request(APPLICATION_JSON)
                                 .header("X-Redmine-API-Key", this.redmineKey)
                                 .buildPost(json(redmineNewUser))
-                                .invoke();
-        if (redmineResponse.getStatus() == 201) {
-            log.info("User was created in Redmine");
-            return newUser.login();
-        } else {
-            List<String> errors = this.extractErrorReport(redmineResponse);
-            log.info("Failed to create user: {}", errors);
-            throw new MulticauseError(errors);
+                                .invoke())) {
+            if (redmineResponse.get().getStatus() == 201) {
+                log.info("User was created in Redmine");
+                return newUser.login();
+            } else {
+                List<String> errors = this.extractErrorReport(redmineResponse.get());
+                log.info("Failed to create user: {}", errors);
+                throw new MulticauseError(errors);
+            }
         }
     }
 
@@ -100,18 +104,18 @@ public class RedmineUserService implements UserService {
             final String login,
             final String password) throws MulticauseError {
         WebTarget target = this.restClient.target(this.redmineUrl + "users/current.json");
-        Response redmineResponse = null;
-        redmineResponse = target.request(APPLICATION_JSON)
-                                .header(AUTHORIZATION,
-                                        this.assembleBasicAuthHeader(login, password))
+        try (Closeable<Response> redmineResponse =
+                closeable(target.request(APPLICATION_JSON)
+                                .header(AUTHORIZATION, assembleBasicAuthHeader(login, password))
                                 .buildGet()
-                                .invoke();
-        if (redmineResponse.getStatus() == 201) {
-            return redmineResponse.readEntity(RedmineUserDetailsCurrentWrapper.class).user();
-        } else {
-            List<String> errors = this.extractErrorReport(redmineResponse);
-            log.info("Failed to create user: {}", errors);
-            throw new MulticauseError(errors);
+                                .invoke())) {
+            if (redmineResponse.get().getStatus() == 201) {
+                return redmineResponse.get().readEntity(RedmineUserDetailsCurrentWrapper.class).user();
+            } else {
+                List<String> errors = this.extractErrorReport(redmineResponse.get());
+                log.info("Failed to create user: {}", errors);
+                throw new MulticauseError(errors);
+            }
         }
     }
 
@@ -124,10 +128,7 @@ public class RedmineUserService implements UserService {
         return null;
     }
 
-    private String assembleBasicAuthHeader(final String login, final String password) {
-        String encodedLoginPass = Base64.getEncoder().encodeToString((login + ':' + password).getBytes());
-        return "Basic " + encodedLoginPass;
-    }
+
 
     private UserDetails mapRedmineUser(final RedmineUserDetails redmineUser) {
         return new UserDetails(redmineUser.login(),
@@ -139,7 +140,6 @@ public class RedmineUserService implements UserService {
 
     private List<String> extractErrorReport(final Response resp) {
         RedmineErrorReport redmineErrors = resp.readEntity(RedmineErrorReport.class);
-        resp.close();
         return redmineErrors == null ? emptyList() : redmineErrors.errors();
     }
 }

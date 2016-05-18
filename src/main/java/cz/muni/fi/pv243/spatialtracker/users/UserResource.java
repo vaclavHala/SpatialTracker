@@ -1,10 +1,11 @@
 package cz.muni.fi.pv243.spatialtracker.users;
 
 import cz.muni.fi.pv243.spatialtracker.MulticauseError;
+import cz.muni.fi.pv243.spatialtracker.users.BasicAuthUtils.LoginPass;
+import static cz.muni.fi.pv243.spatialtracker.users.BasicAuthUtils.decodeBasicAuthLogin;
 import cz.muni.fi.pv243.spatialtracker.users.dto.*;
 import cz.muni.fi.pv243.spatialtracker.users.redmine.RedmineUserService;
 import java.net.URI;
-import java.util.Base64;
 import java.util.Optional;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -16,7 +17,6 @@ import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -59,13 +59,13 @@ public class UserResource {
     @GET
     @Path("/me")
     public Response detailsMe(final @HeaderParam(AUTHORIZATION) String currentUserBasicAuth) throws MulticauseError {
-        LoginPass auth = this.decodeBasicAuthLogin(currentUserBasicAuth);
+        LoginPass auth = decodeBasicAuthLogin(currentUserBasicAuth);
         if (auth == null) {
             log.info("Got details request for current user with invalid Auth header value: {}",
                      currentUserBasicAuth);
             return Response.status(403).build();
         }
-        return Response.ok(this.usersRedmine.detailsCurrentUser(auth.login, auth.pass)).build();
+        return Response.ok(this.usersRedmine.detailsCurrentUser(auth.login(), auth.pass())).build();
     }
 
     @PUT
@@ -78,31 +78,14 @@ public class UserResource {
     @DELETE
     @Path("/me")
     public Response deleteMe(final @HeaderParam(AUTHORIZATION) String currentUserBasicAuth) throws MulticauseError {
-        LoginPass auth = this.decodeBasicAuthLogin(currentUserBasicAuth);
+        LoginPass auth = decodeBasicAuthLogin(currentUserBasicAuth);
         if (auth == null) {
             log.info("Got delete request for current user with invalid Auth header value: {}",
                      currentUserBasicAuth);
             return Response.status(403).build();
         }
-        this.usersRedmine.deleteCurrentUser(auth.login, auth.pass);
+        this.usersRedmine.deleteCurrentUser(auth.login(), auth.pass());
         return Response.noContent().build();
 
-    }
-
-    private LoginPass decodeBasicAuthLogin(final String authHeaderValue) {
-        try {
-            String loginPassAuthPart = authHeaderValue.split(" ")[1];
-            String[] loginPass = new String(Base64.getDecoder().decode(loginPassAuthPart)).split(":");
-            return new LoginPass(loginPass[0], loginPass[1]);
-        } catch (IndexOutOfBoundsException | IllegalArgumentException | NullPointerException e) {
-            return null;
-        }
-    }
-
-    @AllArgsConstructor
-    private static class LoginPass {
-
-        private final String login;
-        private final String pass;
     }
 }
