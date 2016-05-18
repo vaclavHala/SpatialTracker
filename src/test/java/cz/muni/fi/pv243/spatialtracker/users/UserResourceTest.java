@@ -1,14 +1,22 @@
 package cz.muni.fi.pv243.spatialtracker.users;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.Unirest;
 import cz.muni.fi.pv243.spatialtracker.SpatialTracker;
 import cz.muni.fi.pv243.spatialtracker.config.Config;
 import cz.muni.fi.pv243.spatialtracker.users.dto.UserCreate;
 import cz.muni.fi.pv243.spatialtracker.users.dto.UserDetails;
-import cz.muni.fi.pv243.spatialtracker.users.redmine.RedminUsersService;
-import javax.inject.Inject;
+import java.net.URL;
+import static javax.ws.rs.core.HttpHeaders.ACCEPT;
+import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
+import static javax.ws.rs.core.HttpHeaders.LOCATION;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import org.assertj.core.api.SoftAssertions;
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -24,39 +32,68 @@ import org.junit.runner.RunWith;
  * Fix for this bug was already commited to aq repo but has not yet
  * propagated to released version :(
  */
+@RunAsClient
 @RunWith(Arquillian.class)
 public class UserResourceTest {
 
-    @Deployment//(testable = false)
+    private final ObjectMapper json = new ObjectMapper();
+
+    @Deployment(testable = false)
     public static WebArchive create() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, UserResourceTest.class.getSimpleName() + ".war");
-        war.addPackages(true, UserResource.class.getPackage(),
+        war.addPackages(true,
+                        UserResource.class.getPackage(),
                         Config.class.getPackage())
-           .addPackages(false, SpatialTracker.class.getPackage())
-           .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+           .addPackages(false,
+                        SpatialTracker.class.getPackage())
+           .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
+        //                .addAsLibraries(Maven.resolver()
+        //                                .resolve(ASSERTJ_GAV)
+        //                                .withTransitivity()
+        //                                .asFile())
+        ;
         return war;
     }
 
-    @Inject
-    private RedminUsersService usersService;
+    //    @Inject
+    //    private RedminUsersService usersService;
 
-//    @Test
-//    public void shouldReturnFullLocationOfRegisteredUser() throws Exception {
-////        System.out.println("go to sleep");
-////        Thread.sleep(20_000);
-//    }
-//
-//    @Test
-//    public void shouldReturnErrorIfLoginExistsWhenRegistering() throws Exception {
-//
-//    }
+    //    @Test
+    //    public void shouldReturnFullLocationOfRegisteredUser() throws Exception {
+    ////        System.out.println("go to sleep");
+    ////        Thread.sleep(20_000);
+    //    }
+    //
+    //    @Test
+    //    public void shouldReturnErrorIfLoginExistsWhenRegistering() throws Exception {
+    //
+    //    }
 
     @Test
-    public void shouldFindUserByLoginAfterRegistering() throws Exception {
-        String login = "someName";
-        UserCreate newUser = new UserCreate(login, "secret", "mail@me.now");
-        String newUserResource = this.usersService.register(newUser);
-        UserDetails foundUser = this.usersService.detailsSomeUser(newUserResource).get();
+    public void shouldFindUserByLoginAfterRegistering(
+            final @ArquillianResource URL appUrl) throws Exception {
+        String userApiUrl = appUrl + "rest/user/";
+        UserCreate newUser = new UserCreate("someName", "secret", "mail@me.now");
+
+        HttpResponse<String> respRegister =
+                Unirest.post(userApiUrl)
+                       .header(CONTENT_TYPE, APPLICATION_JSON)
+                       .body(this.json.writeValueAsString(newUser))
+                       .asString();
+
+        String newUserLocation = respRegister.getHeaders().getFirst(LOCATION);
+        HttpResponse<String> respFind =
+                Unirest.get(newUserLocation)
+                       .header(ACCEPT, APPLICATION_JSON)
+                       .asString();
+        UserDetails foundUser = this.json.readValue(respFind.getBody(), UserDetails.class);
+
+        System.out.println(respRegister);
+        System.out.println(respRegister.getStatus());
+        System.out.println(respRegister.getStatusText());
+        System.out.println(respRegister.getBody());
+        System.out.println(respRegister.getRawBody());
+        System.out.println(respRegister.getHeaders());
 
         SoftAssertions softly = new SoftAssertions();
         softly.assertThat(foundUser.login()).isEqualTo(newUser.login());

@@ -48,7 +48,8 @@ public class UserResource {
         Optional<UserDetails> user = this.usersRedmine.detailsSomeUser(forLogin);
         if (user.isPresent()) {
             log.info("User <{}> was found", forLogin);
-            return Response.ok(user).build();
+            log.debug("User <{}>: {}", forLogin, user.get());
+            return Response.ok(user.get()).build();
         } else {
             log.info("User <{}> does not exist", forLogin);
             return Response.status(404).build();
