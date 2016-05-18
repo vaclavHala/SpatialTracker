@@ -9,20 +9,23 @@
     <container qualifier="wf-remote" default="true"/>
 
     <extension qualifier="docker">
-      <!--<property name="serverVersion">1.10.3</property>-->
       <property name="serverUri">tcp://localhost:2375</property>
       <property name="clean">true</property>
       <property name="autoStartContainers">redmine-aq</property>
       <property name="dockerContainers">
           postgres-aq:
-            image: postgres
+            buildImage:
+                dockerfileLocation: src/main/environment/postgres
+                remove: true
             await:
               strategy: polling
             env: []
           redmine-aq:
-            image: redmine
+            buildImage:
+                dockerfileLocation: src/main/environment/redmine
+                remove: true
             links:
-                - postgres-aq:postgres-aq
+                - postgres-aq:postgres
             portBindings: [3000/tcp]
             await:
                 # Aq Cube claims to have http strategy which would be perfect here,
@@ -31,6 +34,5 @@
                 sleepPollingTime: 1 s
                 iterations: 20
       </property>
-            <!--publishAllPorts: true-->
   </extension>
 </arquillian>
