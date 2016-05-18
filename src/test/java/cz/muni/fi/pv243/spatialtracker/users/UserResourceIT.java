@@ -34,13 +34,13 @@ import org.junit.runner.RunWith;
  */
 @RunAsClient
 @RunWith(Arquillian.class)
-public class UserResourceTest {
+public class UserResourceIT {
 
     private final ObjectMapper json = new ObjectMapper();
 
     @Deployment(testable = false)
     public static WebArchive create() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, UserResourceTest.class.getSimpleName() + ".war");
+        WebArchive war = ShrinkWrap.create(WebArchive.class, UserResourceIT.class.getSimpleName() + ".war");
         war.addPackages(true,
                         UserResource.class.getPackage(),
                         Config.class.getPackage())
@@ -70,8 +70,7 @@ public class UserResourceTest {
     //    }
 
     @Test
-    public void shouldFindUserByLoginAfterRegistering(
-            final @ArquillianResource URL appUrl) throws Exception {
+    public void shouldFindRegisteredUser(            final @ArquillianResource URL appUrl) throws Exception {
         String userApiUrl = appUrl + "rest/user/";
         UserCreate newUser = new UserCreate("someName", "secret", "mail@me.now");
 
@@ -80,20 +79,13 @@ public class UserResourceTest {
                        .header(CONTENT_TYPE, APPLICATION_JSON)
                        .body(this.json.writeValueAsString(newUser))
                        .asString();
-
         String newUserLocation = respRegister.getHeaders().getFirst(LOCATION);
+
         HttpResponse<String> respFind =
                 Unirest.get(newUserLocation)
                        .header(ACCEPT, APPLICATION_JSON)
                        .asString();
         UserDetails foundUser = this.json.readValue(respFind.getBody(), UserDetails.class);
-
-        System.out.println(respRegister);
-        System.out.println(respRegister.getStatus());
-        System.out.println(respRegister.getStatusText());
-        System.out.println(respRegister.getBody());
-        System.out.println(respRegister.getRawBody());
-        System.out.println(respRegister.getHeaders());
 
         SoftAssertions softly = new SoftAssertions();
         softly.assertThat(foundUser.login()).isEqualTo(newUser.login());
@@ -102,5 +94,6 @@ public class UserResourceTest {
         softly.assertThat(foundUser.lastname()).isNullOrEmpty();
         softly.assertAll();
     }
+
 
 }
