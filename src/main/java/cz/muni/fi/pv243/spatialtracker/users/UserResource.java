@@ -2,7 +2,7 @@ package cz.muni.fi.pv243.spatialtracker.users;
 
 import cz.muni.fi.pv243.spatialtracker.MulticauseError;
 import cz.muni.fi.pv243.spatialtracker.users.dto.*;
-import cz.muni.fi.pv243.spatialtracker.users.redmine.RedminUsersService;
+import cz.muni.fi.pv243.spatialtracker.users.redmine.RedmineUserService;
 import java.net.URI;
 import java.util.Base64;
 import java.util.Optional;
@@ -27,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 public class UserResource {
 
     @Inject
-    private RedminUsersService usersRedmine;
+    private RedmineUserService usersRedmine;
 
     @POST
     public Response register(

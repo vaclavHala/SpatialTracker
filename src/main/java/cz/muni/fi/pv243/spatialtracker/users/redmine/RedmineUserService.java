@@ -26,7 +26,7 @@ import javax.ws.rs.core.Response;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class RedminUsersService implements UserService {
+public class RedmineUserService implements UserService {
 
     private static final String EMPTY = "-";
 
