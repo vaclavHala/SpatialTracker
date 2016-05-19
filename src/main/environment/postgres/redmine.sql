@@ -13,6 +13,43 @@ SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET row_security = off;
 
+\connect postgres
+
+DROP DATABASE redmine;
+--
+-- Name: redmine; Type: DATABASE; Schema: -; Owner: postgres
+--
+
+CREATE DATABASE redmine WITH TEMPLATE = template0 ENCODING = 'UTF8' LC_COLLATE = 'en_US.utf8' LC_CTYPE = 'en_US.utf8';
+
+
+ALTER DATABASE redmine OWNER TO postgres;
+
+\connect redmine
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SET check_function_bodies = false;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- Name: public; Type: SCHEMA; Schema: -; Owner: postgres
+--
+
+
+
+ALTER SCHEMA public OWNER TO postgres;
+
+--
+-- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: postgres
+--
+
+COMMENT ON SCHEMA public IS 'standard public schema';
+
+
 --
 -- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: 
 --
@@ -2244,8 +2281,6 @@ ALTER TABLE ONLY workflows ALTER COLUMN id SET DEFAULT nextval('workflows_id_seq
 -- Data for Name: attachments; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY attachments (id, container_id, container_type, filename, disk_filename, filesize, content_type, digest, downloads, author_id, created_on, description, disk_directory) FROM stdin;
-\.
 
 
 --
@@ -2259,8 +2294,6 @@ SELECT pg_catalog.setval('attachments_id_seq', 1, false);
 -- Data for Name: auth_sources; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY auth_sources (id, type, name, host, port, account, account_password, base_dn, attr_login, attr_firstname, attr_lastname, attr_mail, onthefly_register, tls, filter, timeout) FROM stdin;
-\.
 
 
 --
@@ -2274,8 +2307,6 @@ SELECT pg_catalog.setval('auth_sources_id_seq', 1, false);
 -- Data for Name: boards; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY boards (id, project_id, name, description, "position", topics_count, messages_count, last_message_id, parent_id) FROM stdin;
-\.
 
 
 --
@@ -2289,8 +2320,6 @@ SELECT pg_catalog.setval('boards_id_seq', 1, false);
 -- Data for Name: changes; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY changes (id, changeset_id, action, path, from_path, from_revision, revision, branch) FROM stdin;
-\.
 
 
 --
@@ -2304,16 +2333,12 @@ SELECT pg_catalog.setval('changes_id_seq', 1, false);
 -- Data for Name: changeset_parents; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY changeset_parents (changeset_id, parent_id) FROM stdin;
-\.
 
 
 --
 -- Data for Name: changesets; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY changesets (id, repository_id, revision, committer, committed_on, comments, commit_date, scmid, user_id) FROM stdin;
-\.
 
 
 --
@@ -2327,16 +2352,12 @@ SELECT pg_catalog.setval('changesets_id_seq', 1, false);
 -- Data for Name: changesets_issues; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY changesets_issues (changeset_id, issue_id) FROM stdin;
-\.
 
 
 --
 -- Data for Name: comments; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY comments (id, commented_type, commented_id, author_id, comments, created_on, updated_on) FROM stdin;
-\.
 
 
 --
@@ -2350,8 +2371,6 @@ SELECT pg_catalog.setval('comments_id_seq', 1, false);
 -- Data for Name: custom_field_enumerations; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY custom_field_enumerations (id, custom_field_id, name, active, "position") FROM stdin;
-\.
 
 
 --
@@ -2365,12 +2384,21 @@ SELECT pg_catalog.setval('custom_field_enumerations_id_seq', 1, false);
 -- Data for Name: custom_fields; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY custom_fields (id, type, name, field_format, possible_values, regexp, min_length, max_length, is_required, is_for_all, is_filter, "position", searchable, default_value, editable, visible, multiple, format_store, description) FROM stdin;
-2	IssueCustomField	lat	float	\N		\N	\N	t	f	f	1	f		t	t	f	--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\nurl_pattern: ''\n	latitude\r\n-90 (south) .. 90 (north)
-3	IssueCustomField	lon	float	\N		\N	\N	t	f	f	2	f		t	t	f	--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\nurl_pattern: ''\n	longitude\r\n-180 (west) .. 180 (east)
-4	UserCustomField	icon	text	\N		\N	\N	f	f	f	1	f		t	t	f	--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\ntext_formatting: ''\n	
-5	IssueCustomField	img	string	\N		\N	\N	f	t	f	3	f		t	t	f	--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\ntext_formatting: ''\nurl_pattern: ''\n	
-\.
+INSERT INTO custom_fields (id, type, name, field_format, possible_values, regexp, min_length, max_length, is_required, is_for_all, is_filter, "position", searchable, default_value, editable, visible, multiple, format_store, description) VALUES (2, 'IssueCustomField', 'lat', 'float', NULL, '', NULL, NULL, true, false, false, 1, false, '', true, true, false, '--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess
+url_pattern: ''''
+', 'latitude
+-90 (south) .. 90 (north)');
+INSERT INTO custom_fields (id, type, name, field_format, possible_values, regexp, min_length, max_length, is_required, is_for_all, is_filter, "position", searchable, default_value, editable, visible, multiple, format_store, description) VALUES (3, 'IssueCustomField', 'lon', 'float', NULL, '', NULL, NULL, true, false, false, 2, false, '', true, true, false, '--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess
+url_pattern: ''''
+', 'longitude
+-180 (west) .. 180 (east)');
+INSERT INTO custom_fields (id, type, name, field_format, possible_values, regexp, min_length, max_length, is_required, is_for_all, is_filter, "position", searchable, default_value, editable, visible, multiple, format_store, description) VALUES (4, 'UserCustomField', 'icon', 'text', NULL, '', NULL, NULL, false, false, false, 1, false, '', true, true, false, '--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess
+text_formatting: ''''
+', '');
+INSERT INTO custom_fields (id, type, name, field_format, possible_values, regexp, min_length, max_length, is_required, is_for_all, is_filter, "position", searchable, default_value, editable, visible, multiple, format_store, description) VALUES (5, 'IssueCustomField', 'img', 'string', NULL, '', NULL, NULL, false, true, false, 3, false, '', true, true, false, '--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess
+text_formatting: ''''
+url_pattern: ''''
+', '');
 
 
 --
@@ -2384,37 +2412,29 @@ SELECT pg_catalog.setval('custom_fields_id_seq', 5, true);
 -- Data for Name: custom_fields_projects; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY custom_fields_projects (custom_field_id, project_id) FROM stdin;
-2	4
-3	4
-\.
+INSERT INTO custom_fields_projects (custom_field_id, project_id) VALUES (2, 4);
+INSERT INTO custom_fields_projects (custom_field_id, project_id) VALUES (3, 4);
 
 
 --
 -- Data for Name: custom_fields_roles; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY custom_fields_roles (custom_field_id, role_id) FROM stdin;
-\.
 
 
 --
 -- Data for Name: custom_fields_trackers; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY custom_fields_trackers (custom_field_id, tracker_id) FROM stdin;
-2	1
-3	1
-5	1
-\.
+INSERT INTO custom_fields_trackers (custom_field_id, tracker_id) VALUES (2, 1);
+INSERT INTO custom_fields_trackers (custom_field_id, tracker_id) VALUES (3, 1);
+INSERT INTO custom_fields_trackers (custom_field_id, tracker_id) VALUES (5, 1);
 
 
 --
 -- Data for Name: custom_values; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY custom_values (id, customized_type, customized_id, custom_field_id, value) FROM stdin;
-\.
 
 
 --
@@ -2428,8 +2448,6 @@ SELECT pg_catalog.setval('custom_values_id_seq', 17, true);
 -- Data for Name: documents; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY documents (id, project_id, category_id, title, description, created_on) FROM stdin;
-\.
 
 
 --
@@ -2443,9 +2461,7 @@ SELECT pg_catalog.setval('documents_id_seq', 1, false);
 -- Data for Name: email_addresses; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY email_addresses (id, user_id, address, is_default, notify, created_on, updated_on) FROM stdin;
-1	1	admin@example.net	t	t	2016-04-26 16:24:38.944985	2016-04-26 16:24:38.944985
-\.
+INSERT INTO email_addresses (id, user_id, address, is_default, notify, created_on, updated_on) VALUES (1, 1, 'admin@example.net', true, true, '2016-04-26 16:24:38.944985', '2016-04-26 16:24:38.944985');
 
 
 --
@@ -2459,9 +2475,7 @@ SELECT pg_catalog.setval('email_addresses_id_seq', 14, true);
 -- Data for Name: enabled_modules; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY enabled_modules (id, project_id, name) FROM stdin;
-32	4	issue_tracking
-\.
+INSERT INTO enabled_modules (id, project_id, name) VALUES (32, 4, 'issue_tracking');
 
 
 --
@@ -2475,12 +2489,10 @@ SELECT pg_catalog.setval('enabled_modules_id_seq', 41, true);
 -- Data for Name: enumerations; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY enumerations (id, name, "position", is_default, type, active, project_id, parent_id, position_name) FROM stdin;
-2	MustHave	1	f	IssuePriority	t	\N	\N	lowest
-3	ShouldHave	2	f	IssuePriority	t	\N	\N	default
-4	CouldHave	3	f	IssuePriority	t	\N	\N	high2
-5	WantToHave	4	f	IssuePriority	t	\N	\N	highest
-\.
+INSERT INTO enumerations (id, name, "position", is_default, type, active, project_id, parent_id, position_name) VALUES (2, 'MustHave', 1, false, 'IssuePriority', true, NULL, NULL, 'lowest');
+INSERT INTO enumerations (id, name, "position", is_default, type, active, project_id, parent_id, position_name) VALUES (3, 'ShouldHave', 2, false, 'IssuePriority', true, NULL, NULL, 'default');
+INSERT INTO enumerations (id, name, "position", is_default, type, active, project_id, parent_id, position_name) VALUES (4, 'CouldHave', 3, false, 'IssuePriority', true, NULL, NULL, 'high2');
+INSERT INTO enumerations (id, name, "position", is_default, type, active, project_id, parent_id, position_name) VALUES (5, 'WantToHave', 4, false, 'IssuePriority', true, NULL, NULL, 'highest');
 
 
 --
@@ -2494,16 +2506,12 @@ SELECT pg_catalog.setval('enumerations_id_seq', 5, true);
 -- Data for Name: groups_users; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY groups_users (group_id, user_id) FROM stdin;
-\.
 
 
 --
 -- Data for Name: import_items; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY import_items (id, import_id, "position", obj_id, message) FROM stdin;
-\.
 
 
 --
@@ -2517,8 +2525,6 @@ SELECT pg_catalog.setval('import_items_id_seq', 1, false);
 -- Data for Name: imports; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY imports (id, type, user_id, filename, settings, total_items, finished, created_at, updated_at) FROM stdin;
-\.
 
 
 --
@@ -2532,9 +2538,7 @@ SELECT pg_catalog.setval('imports_id_seq', 1, false);
 -- Data for Name: issue_categories; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY issue_categories (id, project_id, name, assigned_to_id) FROM stdin;
-1	4	test	\N
-\.
+INSERT INTO issue_categories (id, project_id, name, assigned_to_id) VALUES (1, 4, 'test', NULL);
 
 
 --
@@ -2548,8 +2552,6 @@ SELECT pg_catalog.setval('issue_categories_id_seq', 1, true);
 -- Data for Name: issue_relations; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY issue_relations (id, issue_from_id, issue_to_id, relation_type, delay) FROM stdin;
-\.
 
 
 --
@@ -2563,13 +2565,11 @@ SELECT pg_catalog.setval('issue_relations_id_seq', 1, false);
 -- Data for Name: issue_statuses; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY issue_statuses (id, name, is_closed, "position", default_done_ratio) FROM stdin;
-1	awesome	f	1	\N
-2	Reported	f	2	\N
-3	Accepted	f	3	\N
-4	Rejected	t	4	\N
-5	Fixed	t	5	\N
-\.
+INSERT INTO issue_statuses (id, name, is_closed, "position", default_done_ratio) VALUES (1, 'awesome', false, 1, NULL);
+INSERT INTO issue_statuses (id, name, is_closed, "position", default_done_ratio) VALUES (2, 'Reported', false, 2, NULL);
+INSERT INTO issue_statuses (id, name, is_closed, "position", default_done_ratio) VALUES (3, 'Accepted', false, 3, NULL);
+INSERT INTO issue_statuses (id, name, is_closed, "position", default_done_ratio) VALUES (4, 'Rejected', true, 4, NULL);
+INSERT INTO issue_statuses (id, name, is_closed, "position", default_done_ratio) VALUES (5, 'Fixed', true, 5, NULL);
 
 
 --
@@ -2583,8 +2583,6 @@ SELECT pg_catalog.setval('issue_statuses_id_seq', 5, true);
 -- Data for Name: issues; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY issues (id, tracker_id, project_id, subject, description, due_date, category_id, status_id, assigned_to_id, priority_id, fixed_version_id, author_id, lock_version, created_on, updated_on, start_date, done_ratio, estimated_hours, parent_id, root_id, lft, rgt, is_private, closed_on) FROM stdin;
-\.
 
 
 --
@@ -2598,8 +2596,6 @@ SELECT pg_catalog.setval('issues_id_seq', 2, true);
 -- Data for Name: journal_details; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY journal_details (id, journal_id, property, prop_key, old_value, value) FROM stdin;
-\.
 
 
 --
@@ -2613,8 +2609,6 @@ SELECT pg_catalog.setval('journal_details_id_seq', 5, true);
 -- Data for Name: journals; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY journals (id, journalized_id, journalized_type, user_id, notes, created_on, private_notes) FROM stdin;
-\.
 
 
 --
@@ -2628,9 +2622,7 @@ SELECT pg_catalog.setval('journals_id_seq', 2, true);
 -- Data for Name: member_roles; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY member_roles (id, member_id, role_id, inherited_from) FROM stdin;
-1	1	3	\N
-\.
+INSERT INTO member_roles (id, member_id, role_id, inherited_from) VALUES (1, 1, 3, NULL);
 
 
 --
@@ -2644,9 +2636,7 @@ SELECT pg_catalog.setval('member_roles_id_seq', 1, true);
 -- Data for Name: members; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY members (id, user_id, project_id, created_on, mail_notification) FROM stdin;
-1	1	4	2016-04-27 00:37:27.462984	f
-\.
+INSERT INTO members (id, user_id, project_id, created_on, mail_notification) VALUES (1, 1, 4, '2016-04-27 00:37:27.462984', false);
 
 
 --
@@ -2660,8 +2650,6 @@ SELECT pg_catalog.setval('members_id_seq', 1, true);
 -- Data for Name: messages; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY messages (id, board_id, parent_id, subject, content, author_id, replies_count, last_reply_id, created_on, updated_on, locked, sticky) FROM stdin;
-\.
 
 
 --
@@ -2675,8 +2663,6 @@ SELECT pg_catalog.setval('messages_id_seq', 1, false);
 -- Data for Name: news; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY news (id, project_id, title, summary, description, author_id, created_on, comments_count) FROM stdin;
-\.
 
 
 --
@@ -2690,8 +2676,6 @@ SELECT pg_catalog.setval('news_id_seq', 1, false);
 -- Data for Name: open_id_authentication_associations; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY open_id_authentication_associations (id, issued, lifetime, handle, assoc_type, server_url, secret) FROM stdin;
-\.
 
 
 --
@@ -2705,8 +2689,6 @@ SELECT pg_catalog.setval('open_id_authentication_associations_id_seq', 1, false)
 -- Data for Name: open_id_authentication_nonces; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY open_id_authentication_nonces (id, "timestamp", server_url, salt) FROM stdin;
-\.
 
 
 --
@@ -2720,9 +2702,7 @@ SELECT pg_catalog.setval('open_id_authentication_nonces_id_seq', 1, false);
 -- Data for Name: projects; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY projects (id, name, description, homepage, is_public, parent_id, created_on, updated_on, identifier, status, lft, rgt, inherit_members, default_version_id) FROM stdin;
-4	SpatialProject			t	\N	2016-04-26 23:24:58.412119	2016-05-18 05:38:19.082235	id	1	1	2	f	\N
-\.
+INSERT INTO projects (id, name, description, homepage, is_public, parent_id, created_on, updated_on, identifier, status, lft, rgt, inherit_members, default_version_id) VALUES (4, 'SpatialProject', '', '', true, NULL, '2016-04-26 23:24:58.412119', '2016-05-18 05:38:19.082235', 'id', 1, 1, 2, false, NULL);
 
 
 --
@@ -2736,17 +2716,13 @@ SELECT pg_catalog.setval('projects_id_seq', 4, true);
 -- Data for Name: projects_trackers; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY projects_trackers (project_id, tracker_id) FROM stdin;
-4	1
-\.
+INSERT INTO projects_trackers (project_id, tracker_id) VALUES (4, 1);
 
 
 --
 -- Data for Name: queries; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY queries (id, project_id, name, filters, user_id, column_names, sort_criteria, group_by, type, visibility, options) FROM stdin;
-\.
 
 
 --
@@ -2760,16 +2736,12 @@ SELECT pg_catalog.setval('queries_id_seq', 1, false);
 -- Data for Name: queries_roles; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY queries_roles (query_id, role_id) FROM stdin;
-\.
 
 
 --
 -- Data for Name: repositories; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY repositories (id, project_id, url, login, password, root_url, type, path_encoding, log_encoding, extra_info, identifier, is_default, created_on) FROM stdin;
-\.
 
 
 --
@@ -2783,11 +2755,77 @@ SELECT pg_catalog.setval('repositories_id_seq', 1, false);
 -- Data for Name: roles; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY roles (id, name, "position", assignable, builtin, permissions, issues_visibility, users_visibility, time_entries_visibility, all_roles_managed) FROM stdin;
-1	Non member	1	t	1	---\n- :view_issues\n	default	all	all	t
-2	Anonymous	2	t	2	---\n- :view_issues\n	default	all	all	t
-3	deus ex machina	3	t	0	---\n- :add_project\n- :edit_project\n- :close_project\n- :select_project_modules\n- :manage_members\n- :manage_versions\n- :add_subprojects\n- :manage_boards\n- :add_messages\n- :edit_messages\n- :edit_own_messages\n- :delete_messages\n- :delete_own_messages\n- :view_calendar\n- :add_documents\n- :edit_documents\n- :delete_documents\n- :view_documents\n- :manage_files\n- :view_files\n- :view_gantt\n- :manage_categories\n- :view_issues\n- :add_issues\n- :edit_issues\n- :copy_issues\n- :manage_issue_relations\n- :manage_subtasks\n- :set_issues_private\n- :set_own_issues_private\n- :add_issue_notes\n- :edit_issue_notes\n- :edit_own_issue_notes\n- :view_private_notes\n- :set_notes_private\n- :delete_issues\n- :manage_public_queries\n- :save_queries\n- :view_issue_watchers\n- :add_issue_watchers\n- :delete_issue_watchers\n- :import_issues\n- :manage_news\n- :comment_news\n- :manage_repository\n- :browse_repository\n- :view_changesets\n- :commit_access\n- :manage_related_issues\n- :log_time\n- :view_time_entries\n- :edit_time_entries\n- :edit_own_time_entries\n- :manage_project_activities\n- :manage_wiki\n- :rename_wiki_pages\n- :delete_wiki_pages\n- :view_wiki_pages\n- :export_wiki_pages\n- :view_wiki_edits\n- :edit_wiki_pages\n- :delete_wiki_pages_attachments\n- :protect_wiki_pages\n	all	all	all	t
-\.
+INSERT INTO roles (id, name, "position", assignable, builtin, permissions, issues_visibility, users_visibility, time_entries_visibility, all_roles_managed) VALUES (1, 'Non member', 1, true, 1, '---
+- :view_issues
+', 'default', 'all', 'all', true);
+INSERT INTO roles (id, name, "position", assignable, builtin, permissions, issues_visibility, users_visibility, time_entries_visibility, all_roles_managed) VALUES (2, 'Anonymous', 2, true, 2, '---
+- :view_issues
+', 'default', 'all', 'all', true);
+INSERT INTO roles (id, name, "position", assignable, builtin, permissions, issues_visibility, users_visibility, time_entries_visibility, all_roles_managed) VALUES (3, 'deus ex machina', 3, true, 0, '---
+- :add_project
+- :edit_project
+- :close_project
+- :select_project_modules
+- :manage_members
+- :manage_versions
+- :add_subprojects
+- :manage_boards
+- :add_messages
+- :edit_messages
+- :edit_own_messages
+- :delete_messages
+- :delete_own_messages
+- :view_calendar
+- :add_documents
+- :edit_documents
+- :delete_documents
+- :view_documents
+- :manage_files
+- :view_files
+- :view_gantt
+- :manage_categories
+- :view_issues
+- :add_issues
+- :edit_issues
+- :copy_issues
+- :manage_issue_relations
+- :manage_subtasks
+- :set_issues_private
+- :set_own_issues_private
+- :add_issue_notes
+- :edit_issue_notes
+- :edit_own_issue_notes
+- :view_private_notes
+- :set_notes_private
+- :delete_issues
+- :manage_public_queries
+- :save_queries
+- :view_issue_watchers
+- :add_issue_watchers
+- :delete_issue_watchers
+- :import_issues
+- :manage_news
+- :comment_news
+- :manage_repository
+- :browse_repository
+- :view_changesets
+- :commit_access
+- :manage_related_issues
+- :log_time
+- :view_time_entries
+- :edit_time_entries
+- :edit_own_time_entries
+- :manage_project_activities
+- :manage_wiki
+- :rename_wiki_pages
+- :delete_wiki_pages
+- :view_wiki_pages
+- :export_wiki_pages
+- :view_wiki_edits
+- :edit_wiki_pages
+- :delete_wiki_pages_attachments
+- :protect_wiki_pages
+', 'all', 'all', 'all', true);
 
 
 --
@@ -2801,327 +2839,325 @@ SELECT pg_catalog.setval('roles_id_seq', 4, true);
 -- Data for Name: roles_managed_roles; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY roles_managed_roles (role_id, managed_role_id) FROM stdin;
-\.
 
 
 --
 -- Data for Name: schema_migrations; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY schema_migrations (version) FROM stdin;
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-26
-27
-28
-29
-30
-31
-32
-33
-34
-35
-36
-37
-38
-39
-40
-41
-42
-43
-44
-45
-46
-47
-48
-49
-50
-51
-52
-53
-54
-55
-56
-57
-58
-59
-60
-61
-62
-63
-64
-65
-66
-67
-68
-69
-70
-71
-72
-73
-74
-75
-76
-77
-78
-79
-80
-81
-82
-83
-84
-85
-86
-87
-88
-89
-90
-91
-92
-93
-94
-95
-96
-97
-98
-99
-100
-101
-102
-103
-104
-105
-106
-107
-108
-20090214190337
-20090312172426
-20090312194159
-20090318181151
-20090323224724
-20090401221305
-20090401231134
-20090403001910
-20090406161854
-20090425161243
-20090503121501
-20090503121505
-20090503121510
-20090614091200
-20090704172350
-20090704172355
-20090704172358
-20091010093521
-20091017212227
-20091017212457
-20091017212644
-20091017212938
-20091017213027
-20091017213113
-20091017213151
-20091017213228
-20091017213257
-20091017213332
-20091017213444
-20091017213536
-20091017213642
-20091017213716
-20091017213757
-20091017213835
-20091017213910
-20091017214015
-20091017214107
-20091017214136
-20091017214236
-20091017214308
-20091017214336
-20091017214406
-20091017214440
-20091017214519
-20091017214611
-20091017214644
-20091017214720
-20091017214750
-20091025163651
-20091108092559
-20091114105931
-20091123212029
-20091205124427
-20091220183509
-20091220183727
-20091220184736
-20091225164732
-20091227112908
-20100129193402
-20100129193813
-20100221100219
-20100313132032
-20100313171051
-20100705164950
-20100819172912
-20101104182107
-20101107130441
-20101114115114
-20101114115359
-20110220160626
-20110223180944
-20110223180953
-20110224000000
-20110226120112
-20110226120132
-20110227125750
-20110228000000
-20110228000100
-20110401192910
-20110408103312
-20110412065600
-20110511000000
-20110902000000
-20111201201315
-20120115143024
-20120115143100
-20120115143126
-20120127174243
-20120205111326
-20120223110929
-20120301153455
-20120422150750
-20120705074331
-20120707064544
-20120714122000
-20120714122100
-20120714122200
-20120731164049
-20120930112914
-20121026002032
-20121026003537
-20121209123234
-20121209123358
-20121213084931
-20130110122628
-20130201184705
-20130202090625
-20130207175206
-20130207181455
-20130215073721
-20130215111127
-20130215111141
-20130217094251
-20130602092539
-20130710182539
-20130713104233
-20130713111657
-20130729070143
-20130911193200
-20131004113137
-20131005100610
-20131124175346
-20131210180802
-20131214094309
-20131215104612
-20131218183023
-20140228130325
-20140903143914
-20140920094058
-20141029181752
-20141029181824
-20141109112308
-20141122124142
-20150113194759
-20150113211532
-20150113213922
-20150113213955
-20150208105930
-20150510083747
-20150525103953
-20150526183158
-20150528084820
-20150528092912
-20150528093249
-20150725112753
-20150730122707
-20150730122735
-20150921204850
-20150921210243
-20151020182334
-20151020182731
-20151021184614
-20151021185456
-20151021190616
-20151024082034
-20151025072118
-20151031095005
-\.
+INSERT INTO schema_migrations (version) VALUES ('1');
+INSERT INTO schema_migrations (version) VALUES ('2');
+INSERT INTO schema_migrations (version) VALUES ('3');
+INSERT INTO schema_migrations (version) VALUES ('4');
+INSERT INTO schema_migrations (version) VALUES ('5');
+INSERT INTO schema_migrations (version) VALUES ('6');
+INSERT INTO schema_migrations (version) VALUES ('7');
+INSERT INTO schema_migrations (version) VALUES ('8');
+INSERT INTO schema_migrations (version) VALUES ('9');
+INSERT INTO schema_migrations (version) VALUES ('10');
+INSERT INTO schema_migrations (version) VALUES ('11');
+INSERT INTO schema_migrations (version) VALUES ('12');
+INSERT INTO schema_migrations (version) VALUES ('13');
+INSERT INTO schema_migrations (version) VALUES ('14');
+INSERT INTO schema_migrations (version) VALUES ('15');
+INSERT INTO schema_migrations (version) VALUES ('16');
+INSERT INTO schema_migrations (version) VALUES ('17');
+INSERT INTO schema_migrations (version) VALUES ('18');
+INSERT INTO schema_migrations (version) VALUES ('19');
+INSERT INTO schema_migrations (version) VALUES ('20');
+INSERT INTO schema_migrations (version) VALUES ('21');
+INSERT INTO schema_migrations (version) VALUES ('22');
+INSERT INTO schema_migrations (version) VALUES ('23');
+INSERT INTO schema_migrations (version) VALUES ('24');
+INSERT INTO schema_migrations (version) VALUES ('25');
+INSERT INTO schema_migrations (version) VALUES ('26');
+INSERT INTO schema_migrations (version) VALUES ('27');
+INSERT INTO schema_migrations (version) VALUES ('28');
+INSERT INTO schema_migrations (version) VALUES ('29');
+INSERT INTO schema_migrations (version) VALUES ('30');
+INSERT INTO schema_migrations (version) VALUES ('31');
+INSERT INTO schema_migrations (version) VALUES ('32');
+INSERT INTO schema_migrations (version) VALUES ('33');
+INSERT INTO schema_migrations (version) VALUES ('34');
+INSERT INTO schema_migrations (version) VALUES ('35');
+INSERT INTO schema_migrations (version) VALUES ('36');
+INSERT INTO schema_migrations (version) VALUES ('37');
+INSERT INTO schema_migrations (version) VALUES ('38');
+INSERT INTO schema_migrations (version) VALUES ('39');
+INSERT INTO schema_migrations (version) VALUES ('40');
+INSERT INTO schema_migrations (version) VALUES ('41');
+INSERT INTO schema_migrations (version) VALUES ('42');
+INSERT INTO schema_migrations (version) VALUES ('43');
+INSERT INTO schema_migrations (version) VALUES ('44');
+INSERT INTO schema_migrations (version) VALUES ('45');
+INSERT INTO schema_migrations (version) VALUES ('46');
+INSERT INTO schema_migrations (version) VALUES ('47');
+INSERT INTO schema_migrations (version) VALUES ('48');
+INSERT INTO schema_migrations (version) VALUES ('49');
+INSERT INTO schema_migrations (version) VALUES ('50');
+INSERT INTO schema_migrations (version) VALUES ('51');
+INSERT INTO schema_migrations (version) VALUES ('52');
+INSERT INTO schema_migrations (version) VALUES ('53');
+INSERT INTO schema_migrations (version) VALUES ('54');
+INSERT INTO schema_migrations (version) VALUES ('55');
+INSERT INTO schema_migrations (version) VALUES ('56');
+INSERT INTO schema_migrations (version) VALUES ('57');
+INSERT INTO schema_migrations (version) VALUES ('58');
+INSERT INTO schema_migrations (version) VALUES ('59');
+INSERT INTO schema_migrations (version) VALUES ('60');
+INSERT INTO schema_migrations (version) VALUES ('61');
+INSERT INTO schema_migrations (version) VALUES ('62');
+INSERT INTO schema_migrations (version) VALUES ('63');
+INSERT INTO schema_migrations (version) VALUES ('64');
+INSERT INTO schema_migrations (version) VALUES ('65');
+INSERT INTO schema_migrations (version) VALUES ('66');
+INSERT INTO schema_migrations (version) VALUES ('67');
+INSERT INTO schema_migrations (version) VALUES ('68');
+INSERT INTO schema_migrations (version) VALUES ('69');
+INSERT INTO schema_migrations (version) VALUES ('70');
+INSERT INTO schema_migrations (version) VALUES ('71');
+INSERT INTO schema_migrations (version) VALUES ('72');
+INSERT INTO schema_migrations (version) VALUES ('73');
+INSERT INTO schema_migrations (version) VALUES ('74');
+INSERT INTO schema_migrations (version) VALUES ('75');
+INSERT INTO schema_migrations (version) VALUES ('76');
+INSERT INTO schema_migrations (version) VALUES ('77');
+INSERT INTO schema_migrations (version) VALUES ('78');
+INSERT INTO schema_migrations (version) VALUES ('79');
+INSERT INTO schema_migrations (version) VALUES ('80');
+INSERT INTO schema_migrations (version) VALUES ('81');
+INSERT INTO schema_migrations (version) VALUES ('82');
+INSERT INTO schema_migrations (version) VALUES ('83');
+INSERT INTO schema_migrations (version) VALUES ('84');
+INSERT INTO schema_migrations (version) VALUES ('85');
+INSERT INTO schema_migrations (version) VALUES ('86');
+INSERT INTO schema_migrations (version) VALUES ('87');
+INSERT INTO schema_migrations (version) VALUES ('88');
+INSERT INTO schema_migrations (version) VALUES ('89');
+INSERT INTO schema_migrations (version) VALUES ('90');
+INSERT INTO schema_migrations (version) VALUES ('91');
+INSERT INTO schema_migrations (version) VALUES ('92');
+INSERT INTO schema_migrations (version) VALUES ('93');
+INSERT INTO schema_migrations (version) VALUES ('94');
+INSERT INTO schema_migrations (version) VALUES ('95');
+INSERT INTO schema_migrations (version) VALUES ('96');
+INSERT INTO schema_migrations (version) VALUES ('97');
+INSERT INTO schema_migrations (version) VALUES ('98');
+INSERT INTO schema_migrations (version) VALUES ('99');
+INSERT INTO schema_migrations (version) VALUES ('100');
+INSERT INTO schema_migrations (version) VALUES ('101');
+INSERT INTO schema_migrations (version) VALUES ('102');
+INSERT INTO schema_migrations (version) VALUES ('103');
+INSERT INTO schema_migrations (version) VALUES ('104');
+INSERT INTO schema_migrations (version) VALUES ('105');
+INSERT INTO schema_migrations (version) VALUES ('106');
+INSERT INTO schema_migrations (version) VALUES ('107');
+INSERT INTO schema_migrations (version) VALUES ('108');
+INSERT INTO schema_migrations (version) VALUES ('20090214190337');
+INSERT INTO schema_migrations (version) VALUES ('20090312172426');
+INSERT INTO schema_migrations (version) VALUES ('20090312194159');
+INSERT INTO schema_migrations (version) VALUES ('20090318181151');
+INSERT INTO schema_migrations (version) VALUES ('20090323224724');
+INSERT INTO schema_migrations (version) VALUES ('20090401221305');
+INSERT INTO schema_migrations (version) VALUES ('20090401231134');
+INSERT INTO schema_migrations (version) VALUES ('20090403001910');
+INSERT INTO schema_migrations (version) VALUES ('20090406161854');
+INSERT INTO schema_migrations (version) VALUES ('20090425161243');
+INSERT INTO schema_migrations (version) VALUES ('20090503121501');
+INSERT INTO schema_migrations (version) VALUES ('20090503121505');
+INSERT INTO schema_migrations (version) VALUES ('20090503121510');
+INSERT INTO schema_migrations (version) VALUES ('20090614091200');
+INSERT INTO schema_migrations (version) VALUES ('20090704172350');
+INSERT INTO schema_migrations (version) VALUES ('20090704172355');
+INSERT INTO schema_migrations (version) VALUES ('20090704172358');
+INSERT INTO schema_migrations (version) VALUES ('20091010093521');
+INSERT INTO schema_migrations (version) VALUES ('20091017212227');
+INSERT INTO schema_migrations (version) VALUES ('20091017212457');
+INSERT INTO schema_migrations (version) VALUES ('20091017212644');
+INSERT INTO schema_migrations (version) VALUES ('20091017212938');
+INSERT INTO schema_migrations (version) VALUES ('20091017213027');
+INSERT INTO schema_migrations (version) VALUES ('20091017213113');
+INSERT INTO schema_migrations (version) VALUES ('20091017213151');
+INSERT INTO schema_migrations (version) VALUES ('20091017213228');
+INSERT INTO schema_migrations (version) VALUES ('20091017213257');
+INSERT INTO schema_migrations (version) VALUES ('20091017213332');
+INSERT INTO schema_migrations (version) VALUES ('20091017213444');
+INSERT INTO schema_migrations (version) VALUES ('20091017213536');
+INSERT INTO schema_migrations (version) VALUES ('20091017213642');
+INSERT INTO schema_migrations (version) VALUES ('20091017213716');
+INSERT INTO schema_migrations (version) VALUES ('20091017213757');
+INSERT INTO schema_migrations (version) VALUES ('20091017213835');
+INSERT INTO schema_migrations (version) VALUES ('20091017213910');
+INSERT INTO schema_migrations (version) VALUES ('20091017214015');
+INSERT INTO schema_migrations (version) VALUES ('20091017214107');
+INSERT INTO schema_migrations (version) VALUES ('20091017214136');
+INSERT INTO schema_migrations (version) VALUES ('20091017214236');
+INSERT INTO schema_migrations (version) VALUES ('20091017214308');
+INSERT INTO schema_migrations (version) VALUES ('20091017214336');
+INSERT INTO schema_migrations (version) VALUES ('20091017214406');
+INSERT INTO schema_migrations (version) VALUES ('20091017214440');
+INSERT INTO schema_migrations (version) VALUES ('20091017214519');
+INSERT INTO schema_migrations (version) VALUES ('20091017214611');
+INSERT INTO schema_migrations (version) VALUES ('20091017214644');
+INSERT INTO schema_migrations (version) VALUES ('20091017214720');
+INSERT INTO schema_migrations (version) VALUES ('20091017214750');
+INSERT INTO schema_migrations (version) VALUES ('20091025163651');
+INSERT INTO schema_migrations (version) VALUES ('20091108092559');
+INSERT INTO schema_migrations (version) VALUES ('20091114105931');
+INSERT INTO schema_migrations (version) VALUES ('20091123212029');
+INSERT INTO schema_migrations (version) VALUES ('20091205124427');
+INSERT INTO schema_migrations (version) VALUES ('20091220183509');
+INSERT INTO schema_migrations (version) VALUES ('20091220183727');
+INSERT INTO schema_migrations (version) VALUES ('20091220184736');
+INSERT INTO schema_migrations (version) VALUES ('20091225164732');
+INSERT INTO schema_migrations (version) VALUES ('20091227112908');
+INSERT INTO schema_migrations (version) VALUES ('20100129193402');
+INSERT INTO schema_migrations (version) VALUES ('20100129193813');
+INSERT INTO schema_migrations (version) VALUES ('20100221100219');
+INSERT INTO schema_migrations (version) VALUES ('20100313132032');
+INSERT INTO schema_migrations (version) VALUES ('20100313171051');
+INSERT INTO schema_migrations (version) VALUES ('20100705164950');
+INSERT INTO schema_migrations (version) VALUES ('20100819172912');
+INSERT INTO schema_migrations (version) VALUES ('20101104182107');
+INSERT INTO schema_migrations (version) VALUES ('20101107130441');
+INSERT INTO schema_migrations (version) VALUES ('20101114115114');
+INSERT INTO schema_migrations (version) VALUES ('20101114115359');
+INSERT INTO schema_migrations (version) VALUES ('20110220160626');
+INSERT INTO schema_migrations (version) VALUES ('20110223180944');
+INSERT INTO schema_migrations (version) VALUES ('20110223180953');
+INSERT INTO schema_migrations (version) VALUES ('20110224000000');
+INSERT INTO schema_migrations (version) VALUES ('20110226120112');
+INSERT INTO schema_migrations (version) VALUES ('20110226120132');
+INSERT INTO schema_migrations (version) VALUES ('20110227125750');
+INSERT INTO schema_migrations (version) VALUES ('20110228000000');
+INSERT INTO schema_migrations (version) VALUES ('20110228000100');
+INSERT INTO schema_migrations (version) VALUES ('20110401192910');
+INSERT INTO schema_migrations (version) VALUES ('20110408103312');
+INSERT INTO schema_migrations (version) VALUES ('20110412065600');
+INSERT INTO schema_migrations (version) VALUES ('20110511000000');
+INSERT INTO schema_migrations (version) VALUES ('20110902000000');
+INSERT INTO schema_migrations (version) VALUES ('20111201201315');
+INSERT INTO schema_migrations (version) VALUES ('20120115143024');
+INSERT INTO schema_migrations (version) VALUES ('20120115143100');
+INSERT INTO schema_migrations (version) VALUES ('20120115143126');
+INSERT INTO schema_migrations (version) VALUES ('20120127174243');
+INSERT INTO schema_migrations (version) VALUES ('20120205111326');
+INSERT INTO schema_migrations (version) VALUES ('20120223110929');
+INSERT INTO schema_migrations (version) VALUES ('20120301153455');
+INSERT INTO schema_migrations (version) VALUES ('20120422150750');
+INSERT INTO schema_migrations (version) VALUES ('20120705074331');
+INSERT INTO schema_migrations (version) VALUES ('20120707064544');
+INSERT INTO schema_migrations (version) VALUES ('20120714122000');
+INSERT INTO schema_migrations (version) VALUES ('20120714122100');
+INSERT INTO schema_migrations (version) VALUES ('20120714122200');
+INSERT INTO schema_migrations (version) VALUES ('20120731164049');
+INSERT INTO schema_migrations (version) VALUES ('20120930112914');
+INSERT INTO schema_migrations (version) VALUES ('20121026002032');
+INSERT INTO schema_migrations (version) VALUES ('20121026003537');
+INSERT INTO schema_migrations (version) VALUES ('20121209123234');
+INSERT INTO schema_migrations (version) VALUES ('20121209123358');
+INSERT INTO schema_migrations (version) VALUES ('20121213084931');
+INSERT INTO schema_migrations (version) VALUES ('20130110122628');
+INSERT INTO schema_migrations (version) VALUES ('20130201184705');
+INSERT INTO schema_migrations (version) VALUES ('20130202090625');
+INSERT INTO schema_migrations (version) VALUES ('20130207175206');
+INSERT INTO schema_migrations (version) VALUES ('20130207181455');
+INSERT INTO schema_migrations (version) VALUES ('20130215073721');
+INSERT INTO schema_migrations (version) VALUES ('20130215111127');
+INSERT INTO schema_migrations (version) VALUES ('20130215111141');
+INSERT INTO schema_migrations (version) VALUES ('20130217094251');
+INSERT INTO schema_migrations (version) VALUES ('20130602092539');
+INSERT INTO schema_migrations (version) VALUES ('20130710182539');
+INSERT INTO schema_migrations (version) VALUES ('20130713104233');
+INSERT INTO schema_migrations (version) VALUES ('20130713111657');
+INSERT INTO schema_migrations (version) VALUES ('20130729070143');
+INSERT INTO schema_migrations (version) VALUES ('20130911193200');
+INSERT INTO schema_migrations (version) VALUES ('20131004113137');
+INSERT INTO schema_migrations (version) VALUES ('20131005100610');
+INSERT INTO schema_migrations (version) VALUES ('20131124175346');
+INSERT INTO schema_migrations (version) VALUES ('20131210180802');
+INSERT INTO schema_migrations (version) VALUES ('20131214094309');
+INSERT INTO schema_migrations (version) VALUES ('20131215104612');
+INSERT INTO schema_migrations (version) VALUES ('20131218183023');
+INSERT INTO schema_migrations (version) VALUES ('20140228130325');
+INSERT INTO schema_migrations (version) VALUES ('20140903143914');
+INSERT INTO schema_migrations (version) VALUES ('20140920094058');
+INSERT INTO schema_migrations (version) VALUES ('20141029181752');
+INSERT INTO schema_migrations (version) VALUES ('20141029181824');
+INSERT INTO schema_migrations (version) VALUES ('20141109112308');
+INSERT INTO schema_migrations (version) VALUES ('20141122124142');
+INSERT INTO schema_migrations (version) VALUES ('20150113194759');
+INSERT INTO schema_migrations (version) VALUES ('20150113211532');
+INSERT INTO schema_migrations (version) VALUES ('20150113213922');
+INSERT INTO schema_migrations (version) VALUES ('20150113213955');
+INSERT INTO schema_migrations (version) VALUES ('20150208105930');
+INSERT INTO schema_migrations (version) VALUES ('20150510083747');
+INSERT INTO schema_migrations (version) VALUES ('20150525103953');
+INSERT INTO schema_migrations (version) VALUES ('20150526183158');
+INSERT INTO schema_migrations (version) VALUES ('20150528084820');
+INSERT INTO schema_migrations (version) VALUES ('20150528092912');
+INSERT INTO schema_migrations (version) VALUES ('20150528093249');
+INSERT INTO schema_migrations (version) VALUES ('20150725112753');
+INSERT INTO schema_migrations (version) VALUES ('20150730122707');
+INSERT INTO schema_migrations (version) VALUES ('20150730122735');
+INSERT INTO schema_migrations (version) VALUES ('20150921204850');
+INSERT INTO schema_migrations (version) VALUES ('20150921210243');
+INSERT INTO schema_migrations (version) VALUES ('20151020182334');
+INSERT INTO schema_migrations (version) VALUES ('20151020182731');
+INSERT INTO schema_migrations (version) VALUES ('20151021184614');
+INSERT INTO schema_migrations (version) VALUES ('20151021185456');
+INSERT INTO schema_migrations (version) VALUES ('20151021190616');
+INSERT INTO schema_migrations (version) VALUES ('20151024082034');
+INSERT INTO schema_migrations (version) VALUES ('20151025072118');
+INSERT INTO schema_migrations (version) VALUES ('20151031095005');
 
 
 --
 -- Data for Name: settings; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY settings (id, name, value, updated_on) FROM stdin;
-1	rest_api_enabled	1	2016-04-26 17:11:41.937005
-2	jsonp_enabled	0	2016-04-26 17:11:41.945565
-4	default_language	en	2016-05-11 09:28:43.22323
-5	force_default_language_for_anonymous	0	2016-05-11 09:28:43.228712
-6	force_default_language_for_loggedin	0	2016-05-11 09:28:43.23448
-7	start_of_week		2016-05-11 09:28:43.239535
-8	date_format		2016-05-11 09:28:43.245709
-9	time_format		2016-05-11 09:28:43.252606
-10	user_format	firstname_lastname	2016-05-11 09:28:43.257788
-11	gravatar_enabled	0	2016-05-11 09:28:43.263379
-12	gravatar_default		2016-05-11 09:28:43.26956
-13	thumbnails_enabled	0	2016-05-11 09:28:43.274573
-14	thumbnails_size	100	2016-05-11 09:28:43.279119
-3	ui_theme		2016-05-11 09:28:55.816158
-15	enabled_scm	--- []\n	2016-05-11 09:30:07.825798
-16	autofetch_changesets	0	2016-05-11 09:30:07.832142
-17	sys_api_enabled	0	2016-05-11 09:30:07.837443
-18	repository_log_display_limit	100	2016-05-11 09:30:07.843375
-19	commit_ref_keywords	refs,references,IssueID	2016-05-11 09:30:07.848469
-20	commit_cross_project_ref	0	2016-05-11 09:30:07.854119
-21	commit_logtime_enabled	0	2016-05-11 09:30:07.859298
-22	commit_update_keywords	--- []\n	2016-05-11 09:30:07.864254
-24	autologin	0	2016-05-11 09:36:10.972112
-26	unsubscribe	1	2016-05-11 09:36:10.985196
-27	password_min_length	3	2016-05-11 09:36:10.9923
-28	password_max_age	0	2016-05-11 09:36:10.997665
-29	lost_password	1	2016-05-11 09:36:11.002868
-30	max_additional_emails	5	2016-05-11 09:36:11.007484
-31	openid	0	2016-05-11 09:36:11.013427
-32	session_lifetime	0	2016-05-11 09:36:11.019008
-33	session_timeout	0	2016-05-11 09:36:11.023859
-35	default_projects_public	0	2016-05-11 09:38:26.046877
-36	default_projects_modules	--- []\n	2016-05-11 09:38:26.052864
-37	default_projects_tracker_ids	--- []\n	2016-05-11 09:38:26.059162
-38	sequential_project_identifiers	0	2016-05-11 09:38:26.065162
-23	login_required	1	2016-05-11 12:22:52.277326
-25	self_registration	3	2016-05-11 12:22:52.284274
-34	default_users_hide_mail	0	2016-05-11 16:11:55.476903
-\.
+INSERT INTO settings (id, name, value, updated_on) VALUES (1, 'rest_api_enabled', '1', '2016-04-26 17:11:41.937005');
+INSERT INTO settings (id, name, value, updated_on) VALUES (2, 'jsonp_enabled', '0', '2016-04-26 17:11:41.945565');
+INSERT INTO settings (id, name, value, updated_on) VALUES (4, 'default_language', 'en', '2016-05-11 09:28:43.22323');
+INSERT INTO settings (id, name, value, updated_on) VALUES (5, 'force_default_language_for_anonymous', '0', '2016-05-11 09:28:43.228712');
+INSERT INTO settings (id, name, value, updated_on) VALUES (6, 'force_default_language_for_loggedin', '0', '2016-05-11 09:28:43.23448');
+INSERT INTO settings (id, name, value, updated_on) VALUES (7, 'start_of_week', '', '2016-05-11 09:28:43.239535');
+INSERT INTO settings (id, name, value, updated_on) VALUES (8, 'date_format', '', '2016-05-11 09:28:43.245709');
+INSERT INTO settings (id, name, value, updated_on) VALUES (9, 'time_format', '', '2016-05-11 09:28:43.252606');
+INSERT INTO settings (id, name, value, updated_on) VALUES (10, 'user_format', 'firstname_lastname', '2016-05-11 09:28:43.257788');
+INSERT INTO settings (id, name, value, updated_on) VALUES (11, 'gravatar_enabled', '0', '2016-05-11 09:28:43.263379');
+INSERT INTO settings (id, name, value, updated_on) VALUES (12, 'gravatar_default', '', '2016-05-11 09:28:43.26956');
+INSERT INTO settings (id, name, value, updated_on) VALUES (13, 'thumbnails_enabled', '0', '2016-05-11 09:28:43.274573');
+INSERT INTO settings (id, name, value, updated_on) VALUES (14, 'thumbnails_size', '100', '2016-05-11 09:28:43.279119');
+INSERT INTO settings (id, name, value, updated_on) VALUES (3, 'ui_theme', '', '2016-05-11 09:28:55.816158');
+INSERT INTO settings (id, name, value, updated_on) VALUES (15, 'enabled_scm', '--- []
+', '2016-05-11 09:30:07.825798');
+INSERT INTO settings (id, name, value, updated_on) VALUES (16, 'autofetch_changesets', '0', '2016-05-11 09:30:07.832142');
+INSERT INTO settings (id, name, value, updated_on) VALUES (17, 'sys_api_enabled', '0', '2016-05-11 09:30:07.837443');
+INSERT INTO settings (id, name, value, updated_on) VALUES (18, 'repository_log_display_limit', '100', '2016-05-11 09:30:07.843375');
+INSERT INTO settings (id, name, value, updated_on) VALUES (19, 'commit_ref_keywords', 'refs,references,IssueID', '2016-05-11 09:30:07.848469');
+INSERT INTO settings (id, name, value, updated_on) VALUES (20, 'commit_cross_project_ref', '0', '2016-05-11 09:30:07.854119');
+INSERT INTO settings (id, name, value, updated_on) VALUES (21, 'commit_logtime_enabled', '0', '2016-05-11 09:30:07.859298');
+INSERT INTO settings (id, name, value, updated_on) VALUES (22, 'commit_update_keywords', '--- []
+', '2016-05-11 09:30:07.864254');
+INSERT INTO settings (id, name, value, updated_on) VALUES (24, 'autologin', '0', '2016-05-11 09:36:10.972112');
+INSERT INTO settings (id, name, value, updated_on) VALUES (26, 'unsubscribe', '1', '2016-05-11 09:36:10.985196');
+INSERT INTO settings (id, name, value, updated_on) VALUES (27, 'password_min_length', '3', '2016-05-11 09:36:10.9923');
+INSERT INTO settings (id, name, value, updated_on) VALUES (28, 'password_max_age', '0', '2016-05-11 09:36:10.997665');
+INSERT INTO settings (id, name, value, updated_on) VALUES (29, 'lost_password', '1', '2016-05-11 09:36:11.002868');
+INSERT INTO settings (id, name, value, updated_on) VALUES (30, 'max_additional_emails', '5', '2016-05-11 09:36:11.007484');
+INSERT INTO settings (id, name, value, updated_on) VALUES (31, 'openid', '0', '2016-05-11 09:36:11.013427');
+INSERT INTO settings (id, name, value, updated_on) VALUES (32, 'session_lifetime', '0', '2016-05-11 09:36:11.019008');
+INSERT INTO settings (id, name, value, updated_on) VALUES (33, 'session_timeout', '0', '2016-05-11 09:36:11.023859');
+INSERT INTO settings (id, name, value, updated_on) VALUES (35, 'default_projects_public', '0', '2016-05-11 09:38:26.046877');
+INSERT INTO settings (id, name, value, updated_on) VALUES (36, 'default_projects_modules', '--- []
+', '2016-05-11 09:38:26.052864');
+INSERT INTO settings (id, name, value, updated_on) VALUES (37, 'default_projects_tracker_ids', '--- []
+', '2016-05-11 09:38:26.059162');
+INSERT INTO settings (id, name, value, updated_on) VALUES (38, 'sequential_project_identifiers', '0', '2016-05-11 09:38:26.065162');
+INSERT INTO settings (id, name, value, updated_on) VALUES (23, 'login_required', '1', '2016-05-11 12:22:52.277326');
+INSERT INTO settings (id, name, value, updated_on) VALUES (25, 'self_registration', '3', '2016-05-11 12:22:52.284274');
+INSERT INTO settings (id, name, value, updated_on) VALUES (34, 'default_users_hide_mail', '0', '2016-05-11 16:11:55.476903');
 
 
 --
@@ -3135,8 +3171,6 @@ SELECT pg_catalog.setval('settings_id_seq', 38, true);
 -- Data for Name: time_entries; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY time_entries (id, project_id, user_id, issue_id, hours, comments, activity_id, spent_on, tyear, tmonth, tweek, created_on, updated_on) FROM stdin;
-\.
 
 
 --
@@ -3150,17 +3184,15 @@ SELECT pg_catalog.setval('time_entries_id_seq', 1, false);
 -- Data for Name: tokens; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY tokens (id, user_id, action, value, created_on, updated_on) FROM stdin;
-2	1	api	264acfed33b8af628991dda4de64d75390854d82	2016-04-26 17:19:41.968964	2016-04-26 17:19:41.968964
-3	1	feeds	8ba49241a84bbdb910ff3687be5e8cbd1469efdf	2016-04-26 19:33:34.145378	2016-04-26 19:33:34.145378
-20	1	session	eaf3b0b8d923818f6bf5a4fb2c747bc2a8fd9c90	2016-05-11 16:36:29.253037	2016-05-11 19:04:58.592782
-23	1	session	aaa39976393ca91f5b29a66e9e5355a4cba7ca32	2016-05-17 18:49:35.260384	2016-05-17 18:49:54.253754
-1	1	session	e12be39487f79741edaa35c032dd85d551181734	2016-04-26 17:09:29.014253	2016-04-26 20:10:28.118163
-5	1	session	0574f3e7f521f8a5052334667c48f916a4354e6b	2016-04-26 20:27:46.680884	2016-04-27 00:43:41.396684
-26	1	session	c950cfbd76597f0445c882a27ffef27873e49660	2016-05-18 05:27:46.646671	2016-05-18 05:38:48.870217
-6	1	session	7b65e690305b053d7d61ab129b52fed0413a3aa3	2016-04-27 19:37:24.845145	2016-04-27 19:46:57.708756
-7	1	session	21e48d04509493c19e43f4b8b3dd72ff9bba8eaf	2016-05-02 15:55:57.207219	2016-05-02 15:57:58.341
-\.
+INSERT INTO tokens (id, user_id, action, value, created_on, updated_on) VALUES (2, 1, 'api', '264acfed33b8af628991dda4de64d75390854d82', '2016-04-26 17:19:41.968964', '2016-04-26 17:19:41.968964');
+INSERT INTO tokens (id, user_id, action, value, created_on, updated_on) VALUES (3, 1, 'feeds', '8ba49241a84bbdb910ff3687be5e8cbd1469efdf', '2016-04-26 19:33:34.145378', '2016-04-26 19:33:34.145378');
+INSERT INTO tokens (id, user_id, action, value, created_on, updated_on) VALUES (20, 1, 'session', 'eaf3b0b8d923818f6bf5a4fb2c747bc2a8fd9c90', '2016-05-11 16:36:29.253037', '2016-05-11 19:04:58.592782');
+INSERT INTO tokens (id, user_id, action, value, created_on, updated_on) VALUES (23, 1, 'session', 'aaa39976393ca91f5b29a66e9e5355a4cba7ca32', '2016-05-17 18:49:35.260384', '2016-05-17 18:49:54.253754');
+INSERT INTO tokens (id, user_id, action, value, created_on, updated_on) VALUES (1, 1, 'session', 'e12be39487f79741edaa35c032dd85d551181734', '2016-04-26 17:09:29.014253', '2016-04-26 20:10:28.118163');
+INSERT INTO tokens (id, user_id, action, value, created_on, updated_on) VALUES (5, 1, 'session', '0574f3e7f521f8a5052334667c48f916a4354e6b', '2016-04-26 20:27:46.680884', '2016-04-27 00:43:41.396684');
+INSERT INTO tokens (id, user_id, action, value, created_on, updated_on) VALUES (26, 1, 'session', 'c950cfbd76597f0445c882a27ffef27873e49660', '2016-05-18 05:27:46.646671', '2016-05-18 05:38:48.870217');
+INSERT INTO tokens (id, user_id, action, value, created_on, updated_on) VALUES (6, 1, 'session', '7b65e690305b053d7d61ab129b52fed0413a3aa3', '2016-04-27 19:37:24.845145', '2016-04-27 19:46:57.708756');
+INSERT INTO tokens (id, user_id, action, value, created_on, updated_on) VALUES (7, 1, 'session', '21e48d04509493c19e43f4b8b3dd72ff9bba8eaf', '2016-05-02 15:55:57.207219', '2016-05-02 15:57:58.341');
 
 
 --
@@ -3174,9 +3206,7 @@ SELECT pg_catalog.setval('tokens_id_seq', 26, true);
 -- Data for Name: trackers; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY trackers (id, name, is_in_chlog, "position", is_in_roadmap, fields_bits, default_status_id) FROM stdin;
-1	SpatialTracker	f	1	t	239	2
-\.
+INSERT INTO trackers (id, name, is_in_chlog, "position", is_in_roadmap, fields_bits, default_status_id) VALUES (1, 'SpatialTracker', false, 1, true, 239, 2);
 
 
 --
@@ -3190,9 +3220,8 @@ SELECT pg_catalog.setval('trackers_id_seq', 1, true);
 -- Data for Name: user_preferences; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY user_preferences (id, user_id, others, hide_mail, time_zone) FROM stdin;
-1	1	--- {}\n	t	\N
-\.
+INSERT INTO user_preferences (id, user_id, others, hide_mail, time_zone) VALUES (1, 1, '--- {}
+', true, NULL);
 
 
 --
@@ -3206,15 +3235,13 @@ SELECT pg_catalog.setval('user_preferences_id_seq', 7, true);
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY users (id, login, hashed_password, firstname, lastname, admin, status, last_login_on, language, auth_source_id, created_on, updated_on, type, identity_url, mail_notification, salt, must_change_passwd, passwd_changed_on) FROM stdin;
-2				Anonymous users	f	1	\N		\N	2016-04-26 16:24:38.841233	2016-04-26 16:24:38.841233	GroupAnonymous	\N		\N	f	\N
-3				Non member users	f	1	\N		\N	2016-04-26 16:24:38.870088	2016-04-26 16:24:38.870088	GroupNonMember	\N		\N	f	\N
-4				Anonymous	f	0	\N		\N	2016-04-26 16:27:45.044088	2016-04-26 16:27:45.044088	AnonymousUser	\N	only_my_events	\N	f	\N
-1	admin	dbc2ffb036f4988dc59d21150aabd6285a2ab409	Redmine	Admin	t	1	2016-05-18 05:27:46.632568		\N	2016-04-26 16:24:35.534265	2016-04-26 16:24:35.534265	User	\N	all	0cb213aa9ddf50a09184ece6f00b3405	f	\N
-6				logged_in_user	f	1	\N		\N	2016-05-11 09:16:56.688478	2016-05-11 09:16:56.688478	Group	\N		\N	f	\N
-7				worker_user	f	1	\N		\N	2016-05-11 09:17:07.270485	2016-05-11 09:17:07.270485	Group	\N		\N	f	\N
-8				anonymous_user	f	1	\N		\N	2016-05-11 09:17:44.633114	2016-05-11 09:17:44.633114	Group	\N		\N	f	\N
-\.
+INSERT INTO users (id, login, hashed_password, firstname, lastname, admin, status, last_login_on, language, auth_source_id, created_on, updated_on, type, identity_url, mail_notification, salt, must_change_passwd, passwd_changed_on) VALUES (2, '', '', '', 'Anonymous users', false, 1, NULL, '', NULL, '2016-04-26 16:24:38.841233', '2016-04-26 16:24:38.841233', 'GroupAnonymous', NULL, '', NULL, false, NULL);
+INSERT INTO users (id, login, hashed_password, firstname, lastname, admin, status, last_login_on, language, auth_source_id, created_on, updated_on, type, identity_url, mail_notification, salt, must_change_passwd, passwd_changed_on) VALUES (3, '', '', '', 'Non member users', false, 1, NULL, '', NULL, '2016-04-26 16:24:38.870088', '2016-04-26 16:24:38.870088', 'GroupNonMember', NULL, '', NULL, false, NULL);
+INSERT INTO users (id, login, hashed_password, firstname, lastname, admin, status, last_login_on, language, auth_source_id, created_on, updated_on, type, identity_url, mail_notification, salt, must_change_passwd, passwd_changed_on) VALUES (4, '', '', '', 'Anonymous', false, 0, NULL, '', NULL, '2016-04-26 16:27:45.044088', '2016-04-26 16:27:45.044088', 'AnonymousUser', NULL, 'only_my_events', NULL, false, NULL);
+INSERT INTO users (id, login, hashed_password, firstname, lastname, admin, status, last_login_on, language, auth_source_id, created_on, updated_on, type, identity_url, mail_notification, salt, must_change_passwd, passwd_changed_on) VALUES (1, 'admin', 'dbc2ffb036f4988dc59d21150aabd6285a2ab409', 'Redmine', 'Admin', true, 1, '2016-05-18 05:27:46.632568', '', NULL, '2016-04-26 16:24:35.534265', '2016-04-26 16:24:35.534265', 'User', NULL, 'all', '0cb213aa9ddf50a09184ece6f00b3405', false, NULL);
+INSERT INTO users (id, login, hashed_password, firstname, lastname, admin, status, last_login_on, language, auth_source_id, created_on, updated_on, type, identity_url, mail_notification, salt, must_change_passwd, passwd_changed_on) VALUES (6, '', '', '', 'logged_in_user', false, 1, NULL, '', NULL, '2016-05-11 09:16:56.688478', '2016-05-11 09:16:56.688478', 'Group', NULL, '', NULL, false, NULL);
+INSERT INTO users (id, login, hashed_password, firstname, lastname, admin, status, last_login_on, language, auth_source_id, created_on, updated_on, type, identity_url, mail_notification, salt, must_change_passwd, passwd_changed_on) VALUES (7, '', '', '', 'worker_user', false, 1, NULL, '', NULL, '2016-05-11 09:17:07.270485', '2016-05-11 09:17:07.270485', 'Group', NULL, '', NULL, false, NULL);
+INSERT INTO users (id, login, hashed_password, firstname, lastname, admin, status, last_login_on, language, auth_source_id, created_on, updated_on, type, identity_url, mail_notification, salt, must_change_passwd, passwd_changed_on) VALUES (8, '', '', '', 'anonymous_user', false, 1, NULL, '', NULL, '2016-05-11 09:17:44.633114', '2016-05-11 09:17:44.633114', 'Group', NULL, '', NULL, false, NULL);
 
 
 --
@@ -3228,8 +3255,6 @@ SELECT pg_catalog.setval('users_id_seq', 20, true);
 -- Data for Name: versions; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY versions (id, project_id, name, description, effective_date, created_on, updated_on, wiki_page_title, status, sharing) FROM stdin;
-\.
 
 
 --
@@ -3243,8 +3268,6 @@ SELECT pg_catalog.setval('versions_id_seq', 1, false);
 -- Data for Name: watchers; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY watchers (id, watchable_type, watchable_id, user_id) FROM stdin;
-\.
 
 
 --
@@ -3258,8 +3281,6 @@ SELECT pg_catalog.setval('watchers_id_seq', 1, false);
 -- Data for Name: wiki_content_versions; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY wiki_content_versions (id, wiki_content_id, page_id, author_id, data, compression, comments, updated_on, version) FROM stdin;
-\.
 
 
 --
@@ -3273,8 +3294,6 @@ SELECT pg_catalog.setval('wiki_content_versions_id_seq', 1, false);
 -- Data for Name: wiki_contents; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY wiki_contents (id, page_id, author_id, text, comments, updated_on, version) FROM stdin;
-\.
 
 
 --
@@ -3288,8 +3307,6 @@ SELECT pg_catalog.setval('wiki_contents_id_seq', 1, false);
 -- Data for Name: wiki_pages; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY wiki_pages (id, wiki_id, title, created_on, protected, parent_id) FROM stdin;
-\.
 
 
 --
@@ -3303,8 +3320,6 @@ SELECT pg_catalog.setval('wiki_pages_id_seq', 1, false);
 -- Data for Name: wiki_redirects; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY wiki_redirects (id, wiki_id, title, redirects_to, created_on, redirects_to_wiki_id) FROM stdin;
-\.
 
 
 --
@@ -3318,9 +3333,7 @@ SELECT pg_catalog.setval('wiki_redirects_id_seq', 1, false);
 -- Data for Name: wikis; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY wikis (id, project_id, start_page, status) FROM stdin;
-4	4	Wiki	1
-\.
+INSERT INTO wikis (id, project_id, start_page, status) VALUES (4, 4, 'Wiki', 1);
 
 
 --
@@ -3334,20 +3347,18 @@ SELECT pg_catalog.setval('wikis_id_seq', 4, true);
 -- Data for Name: workflows; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-COPY workflows (id, tracker_id, old_status_id, new_status_id, role_id, assignee, author, type, field_name, rule) FROM stdin;
-1	1	0	2	1	f	f	WorkflowTransition	\N	\N
-2	1	0	2	2	f	f	WorkflowTransition	\N	\N
-3	1	0	2	3	f	f	WorkflowTransition	\N	\N
-4	1	2	3	1	f	f	WorkflowTransition	\N	\N
-5	1	2	3	2	f	f	WorkflowTransition	\N	\N
-6	1	2	3	3	f	f	WorkflowTransition	\N	\N
-7	1	2	4	1	f	f	WorkflowTransition	\N	\N
-8	1	2	4	2	f	f	WorkflowTransition	\N	\N
-9	1	2	4	3	f	f	WorkflowTransition	\N	\N
-10	1	3	5	1	f	f	WorkflowTransition	\N	\N
-11	1	3	5	2	f	f	WorkflowTransition	\N	\N
-12	1	3	5	3	f	f	WorkflowTransition	\N	\N
-\.
+INSERT INTO workflows (id, tracker_id, old_status_id, new_status_id, role_id, assignee, author, type, field_name, rule) VALUES (1, 1, 0, 2, 1, false, false, 'WorkflowTransition', NULL, NULL);
+INSERT INTO workflows (id, tracker_id, old_status_id, new_status_id, role_id, assignee, author, type, field_name, rule) VALUES (2, 1, 0, 2, 2, false, false, 'WorkflowTransition', NULL, NULL);
+INSERT INTO workflows (id, tracker_id, old_status_id, new_status_id, role_id, assignee, author, type, field_name, rule) VALUES (3, 1, 0, 2, 3, false, false, 'WorkflowTransition', NULL, NULL);
+INSERT INTO workflows (id, tracker_id, old_status_id, new_status_id, role_id, assignee, author, type, field_name, rule) VALUES (4, 1, 2, 3, 1, false, false, 'WorkflowTransition', NULL, NULL);
+INSERT INTO workflows (id, tracker_id, old_status_id, new_status_id, role_id, assignee, author, type, field_name, rule) VALUES (5, 1, 2, 3, 2, false, false, 'WorkflowTransition', NULL, NULL);
+INSERT INTO workflows (id, tracker_id, old_status_id, new_status_id, role_id, assignee, author, type, field_name, rule) VALUES (6, 1, 2, 3, 3, false, false, 'WorkflowTransition', NULL, NULL);
+INSERT INTO workflows (id, tracker_id, old_status_id, new_status_id, role_id, assignee, author, type, field_name, rule) VALUES (7, 1, 2, 4, 1, false, false, 'WorkflowTransition', NULL, NULL);
+INSERT INTO workflows (id, tracker_id, old_status_id, new_status_id, role_id, assignee, author, type, field_name, rule) VALUES (8, 1, 2, 4, 2, false, false, 'WorkflowTransition', NULL, NULL);
+INSERT INTO workflows (id, tracker_id, old_status_id, new_status_id, role_id, assignee, author, type, field_name, rule) VALUES (9, 1, 2, 4, 3, false, false, 'WorkflowTransition', NULL, NULL);
+INSERT INTO workflows (id, tracker_id, old_status_id, new_status_id, role_id, assignee, author, type, field_name, rule) VALUES (10, 1, 3, 5, 1, false, false, 'WorkflowTransition', NULL, NULL);
+INSERT INTO workflows (id, tracker_id, old_status_id, new_status_id, role_id, assignee, author, type, field_name, rule) VALUES (11, 1, 3, 5, 2, false, false, 'WorkflowTransition', NULL, NULL);
+INSERT INTO workflows (id, tracker_id, old_status_id, new_status_id, role_id, assignee, author, type, field_name, rule) VALUES (12, 1, 3, 5, 3, false, false, 'WorkflowTransition', NULL, NULL);
 
 
 --

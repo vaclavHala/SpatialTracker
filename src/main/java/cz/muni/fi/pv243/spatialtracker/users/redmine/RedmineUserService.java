@@ -4,6 +4,7 @@ import cz.muni.fi.pv243.spatialtracker.Closeable;
 import static cz.muni.fi.pv243.spatialtracker.Closeable.closeable;
 import cz.muni.fi.pv243.spatialtracker.RedmineErrorReport;
 import cz.muni.fi.pv243.spatialtracker.MulticauseError;
+import cz.muni.fi.pv243.spatialtracker.ServerError;
 import cz.muni.fi.pv243.spatialtracker.config.Property;
 import cz.muni.fi.pv243.spatialtracker.users.UserService;
 import static cz.muni.fi.pv243.spatialtracker.config.PropertyType.REDMINE_API_KEY;
@@ -14,13 +15,14 @@ import cz.muni.fi.pv243.spatialtracker.users.redmine.dto.RedmineUserCreate;
 import cz.muni.fi.pv243.spatialtracker.users.redmine.dto.RedmineUserDetails;
 import cz.muni.fi.pv243.spatialtracker.users.redmine.dto.RedmineUserDetailsCurrentWrapper;
 import cz.muni.fi.pv243.spatialtracker.users.redmine.dto.RedmineUserDetailsSearchWrapper;
+import java.io.IOException;
 import static java.lang.String.format;
-import java.util.Base64;
 import static java.util.Collections.emptyList;
 import java.util.List;
 import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import static javax.ws.rs.client.Entity.json;
 import javax.ws.rs.client.WebTarget;
@@ -65,6 +67,8 @@ public class RedmineUserService implements UserService {
                 log.info("Failed to create user: {}", errors);
                 throw new MulticauseError(errors);
             }
+        } catch (ProcessingException e) {
+            throw new ServerError(e);
         }
     }
 
@@ -72,12 +76,17 @@ public class RedmineUserService implements UserService {
         WebTarget target = this.restClient.target(this.redmineUrl + "users.json")
                                           .queryParam("name", login)
                                           .queryParam("limit", 1);
-        RedmineUserDetailsSearchWrapper redmineResponse =
-                target.request(APPLICATION_JSON)
-                      .header("X-Redmine-API-Key", this.redmineKey)
-                      .buildGet()
-                      .invoke(RedmineUserDetailsSearchWrapper.class);
-        return Optional.ofNullable(this.extractUser(login, redmineResponse.matchedUsers()));
+        try (Closeable<Response> redmineResponse =
+                closeable(target.request(APPLICATION_JSON)
+                                .header("X-Redmine-API-Key", this.redmineKey)
+                                .buildGet()
+                                .invoke())) {
+            RedmineUserDetailsSearchWrapper redmineUsers =
+                    redmineResponse.get().readEntity(RedmineUserDetailsSearchWrapper.class);
+            return Optional.ofNullable(this.extractUser(login, redmineUsers.matchedUsers()));
+        } catch (ProcessingException e) {
+            throw new ServerError(e);
+        }
     }
 
     public UserDetails detailsCurrentUser(final String login, final String password) throws MulticauseError {
@@ -91,14 +100,18 @@ public class RedmineUserService implements UserService {
                                       this.redmineUrl,
                                       redmineUser.id());
         WebTarget target = this.restClient.target(deleteUserUri);
-        Response redmineResponse = target.request()
-                                         .header("X-Redmine-API-Key", this.redmineKey)
-                                         .buildDelete()
-                                         .invoke();
-        if (redmineResponse.getStatus() != 200) {
-            List<String> errors = this.extractErrorReport(redmineResponse);
-            log.info("Failed to delete user: {}", errors);
-            throw new MulticauseError(errors);
+        try (Closeable<Response> redmineResponse =
+                closeable(target.request()
+                                .header("X-Redmine-API-Key", this.redmineKey)
+                                .buildDelete()
+                                .invoke())) {
+            if (redmineResponse.get().getStatus() != 200) {
+                List<String> errors = this.extractErrorReport(redmineResponse.get());
+                log.info("Failed to delete user: {}", errors);
+                throw new MulticauseError(errors);
+            }
+        } catch (ProcessingException e) {
+            throw new ServerError(e);
         }
     }
 
@@ -115,9 +128,11 @@ public class RedmineUserService implements UserService {
                 return redmineResponse.get().readEntity(RedmineUserDetailsCurrentWrapper.class).user();
             } else {
                 List<String> errors = this.extractErrorReport(redmineResponse.get());
-                log.info("Failed to create user: {}", errors);
+                log.info("Failed to display user: {}", errors);
                 throw new MulticauseError(errors);
             }
+        } catch (ProcessingException e) {
+            throw new ServerError(e);
         }
     }
 
@@ -129,8 +144,6 @@ public class RedmineUserService implements UserService {
         }
         return null;
     }
-
-
 
     private UserDetails mapRedmineUser(final RedmineUserDetails redmineUser) {
         return new UserDetails(redmineUser.login(),
