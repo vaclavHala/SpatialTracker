@@ -13,14 +13,18 @@ import java.net.URL;
 import java.sql.SQLException;
 import static java.util.Arrays.asList;
 import java.util.List;
+import javax.ws.rs.core.HttpHeaders;
 import static javax.ws.rs.core.HttpHeaders.ACCEPT;
 import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.HttpHeaders.LOCATION;
+import static javax.ws.rs.core.HttpHeaders.WWW_AUTHENTICATE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import javax.ws.rs.core.Response;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
+import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import lombok.extern.slf4j.Slf4j;
 import org.arquillian.cube.CubeController;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -95,20 +99,6 @@ public class UserResourceIT {
         cube.start("redmine-aq");
     }
 
-    //    @Inject
-    //    private RedminUsersService usersService;
-
-    //    @Test
-    //    public void shouldReturnFullLocationOfRegisteredUser() throws Exception {
-    ////        System.out.println("go to sleep");
-    ////        Thread.sleep(20_000);
-    //    }
-    //
-    //    @Test
-    //    public void shouldReturnErrorIfLoginExistsWhenRegistering() throws Exception {
-    //
-    //    }
-
     @Test
     public void shouldFindRegisteredUser(final @ArquillianResource URL appUrl) throws Exception {
         String userApiUrl = appUrl + "rest/user/";
@@ -162,5 +152,21 @@ public class UserResourceIT {
                        .header(CONTENT_TYPE, APPLICATION_JSON)
                        .asString();
         assertThat(respFoundUser.getStatus()).isEqualTo(NOT_FOUND.getStatusCode());
+    }
+
+    @Test
+    public void shouldReturn401AndWWWAuthenticateHeaderIfInvalidCredentials(
+            final @ArquillianResource URL appUrl) throws Exception {
+        String userApiUrl = appUrl + "rest/user/me";
+        String basicAuthHeader = assembleBasicAuthHeader("thisGuy", "doesntExist");
+        HttpResponse<String> respDetailsCurrent =
+                Unirest.get(userApiUrl)
+                       .header(AUTHORIZATION, basicAuthHeader)
+                       .asString();
+
+        SoftAssertions softly = new SoftAssertions();
+        softly.assertThat(respDetailsCurrent.getStatus()).isEqualTo(UNAUTHORIZED.getStatusCode());
+        softly.assertThat(respDetailsCurrent.getHeaders()).containsKey(WWW_AUTHENTICATE);
+        softly.assertAll();
     }
 }

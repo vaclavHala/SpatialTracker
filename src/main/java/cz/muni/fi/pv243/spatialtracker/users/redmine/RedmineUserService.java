@@ -1,10 +1,7 @@
 package cz.muni.fi.pv243.spatialtracker.users.redmine;
 
-import cz.muni.fi.pv243.spatialtracker.Closeable;
+import cz.muni.fi.pv243.spatialtracker.*;
 import static cz.muni.fi.pv243.spatialtracker.Closeable.closeable;
-import cz.muni.fi.pv243.spatialtracker.RedmineErrorReport;
-import cz.muni.fi.pv243.spatialtracker.MulticauseError;
-import cz.muni.fi.pv243.spatialtracker.ServerError;
 import cz.muni.fi.pv243.spatialtracker.config.Property;
 import cz.muni.fi.pv243.spatialtracker.users.UserService;
 import static cz.muni.fi.pv243.spatialtracker.config.PropertyType.REDMINE_API_KEY;
@@ -126,6 +123,8 @@ public class RedmineUserService implements UserService {
                                 .invoke())) {
             if (redmineResponse.get().getStatus() == 200) {
                 return redmineResponse.get().readEntity(RedmineUserDetailsCurrentWrapper.class).user();
+            } else if (redmineResponse.get().getStatus() == 401) {
+                    throw new AuthenticationException();
             } else {
                 List<String> errors = this.extractErrorReport(redmineResponse.get());
                 log.info("Failed to display user: {}", errors);

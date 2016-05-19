@@ -1,5 +1,6 @@
 package cz.muni.fi.pv243.spatialtracker.users;
 
+import cz.muni.fi.pv243.spatialtracker.AuthenticationException;
 import cz.muni.fi.pv243.spatialtracker.MulticauseError;
 import cz.muni.fi.pv243.spatialtracker.users.BasicAuthUtils.LoginPass;
 import static cz.muni.fi.pv243.spatialtracker.users.BasicAuthUtils.decodeBasicAuthLogin;
@@ -63,7 +64,7 @@ public class UserResource {
         if (auth == null) {
             log.info("Got details request for current user with invalid Auth header value: {}",
                      currentUserBasicAuth);
-            return Response.status(403).build();
+            throw new AuthenticationException();
         }
         return Response.ok(this.usersRedmine.detailsCurrentUser(auth.login(), auth.pass())).build();
     }
