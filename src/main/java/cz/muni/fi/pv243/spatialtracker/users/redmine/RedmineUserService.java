@@ -20,6 +20,7 @@ import static java.util.Collections.emptyList;
 import java.util.List;
 import java.util.Optional;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.ws.rs.client.Client;
 import static javax.ws.rs.client.Entity.json;
 import javax.ws.rs.client.WebTarget;
@@ -29,6 +30,7 @@ import javax.ws.rs.core.Response;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Named("RedmineUserService")
 public class RedmineUserService implements UserService {
 
     private static final String EMPTY = "-";
@@ -109,7 +111,7 @@ public class RedmineUserService implements UserService {
                                 .header(AUTHORIZATION, assembleBasicAuthHeader(login, password))
                                 .buildGet()
                                 .invoke())) {
-            if (redmineResponse.get().getStatus() == 201) {
+            if (redmineResponse.get().getStatus() == 200) {
                 return redmineResponse.get().readEntity(RedmineUserDetailsCurrentWrapper.class).user();
             } else {
                 List<String> errors = this.extractErrorReport(redmineResponse.get());

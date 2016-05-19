@@ -1,0 +1,14 @@
+connect
+ 
+/subsystem=security/security-domain=spatial-tracker:add(cache-type=default)
+ 
+reload
+ 
+/subsystem=security/security-domain=spatial-tracker/authentication=classic: \
+    add( \
+        login-modules=[{ \
+            "code"=>"cz.muni.fi.pv243.spatialtracker.users.redmine.RedmineLoginModule", \
+            "flag"=>"required" \
+        }])
+ 
+reload
