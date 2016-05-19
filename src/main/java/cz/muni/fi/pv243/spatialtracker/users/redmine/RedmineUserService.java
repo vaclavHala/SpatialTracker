@@ -122,11 +122,11 @@ public class RedmineUserService implements UserService {
                                 .header(AUTHORIZATION, assembleBasicAuthHeader(login, password))
                                 .buildGet()
                                 .invoke())) {
-            if (redmineResponse.get().getStatus() == 201) {
+            if (redmineResponse.get().getStatus() == 200) {
                 return redmineResponse.get().readEntity(RedmineUserDetailsCurrentWrapper.class).user();
             } else {
                 List<String> errors = this.extractErrorReport(redmineResponse.get());
-                log.info("Failed to create user: {}", errors);
+                log.info("Failed to display user: {}", errors);
                 throw new MulticauseError(errors);
             }
         } catch (ProcessingException e) {
