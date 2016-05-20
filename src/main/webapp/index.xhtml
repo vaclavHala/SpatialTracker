@@ -48,7 +48,8 @@
 
 		        function MessageController($scope, $resource) {
 
-		            var Message = $resource(restContext + '/messages');
+		            var roomName = 'testing';
+		            var Message = $resource(restContext + '/messages/' + roomName);
 
 		            $scope.messages = [];
 		            $scope.name = localStorage.name || '';
@@ -66,7 +67,7 @@
 		                $scope.messageText = '';
 		            }
 
-		            Socket.subscribe('/socket/messages', function(message) {
+		            Socket.subscribe('/socket/messages/' + roomName, function(message) {
 		                $scope.messages.push(message);
 		                $scope.$digest();
 		            });

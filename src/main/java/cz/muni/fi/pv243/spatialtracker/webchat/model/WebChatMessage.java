@@ -2,6 +2,16 @@ package cz.muni.fi.pv243.spatialtracker.webchat.model;
 
 public class WebChatMessage {
 	private String name;
+
+	public WebChatMessage() {
+
+	}
+
+	public WebChatMessage(String name, String text) {
+		this.name = name;
+		this.text = text;
+	}
+
 	public String getName() {
 		return name;
 	}
