@@ -13,14 +13,12 @@ import java.net.URL;
 import java.sql.SQLException;
 import static java.util.Arrays.asList;
 import java.util.List;
-import javax.ws.rs.core.HttpHeaders;
 import static javax.ws.rs.core.HttpHeaders.ACCEPT;
 import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.HttpHeaders.LOCATION;
 import static javax.ws.rs.core.HttpHeaders.WWW_AUTHENTICATE;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import javax.ws.rs.core.Response;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
@@ -35,6 +33,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Before;
 import org.junit.Test;
@@ -68,11 +67,10 @@ public class UserResourceIT {
            .addPackages(false,
                         SpatialTracker.class.getPackage())
            .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
-        //                .addAsLibraries(Maven.resolver()
-        //                                .resolve(ASSERTJ_GAV)
-        //                                .withTransitivity()
-        //                                .asFile())
-        ;
+           //for tests redmine URL is shifted by 1 to not clash with concurrently running live redmine
+           .addAsResource(new StringAsset("{\"base_url\" : \"http://127.0.0.1:3001/\"," +
+                                          "\"api_key\" : \"264acfed33b8af628991dda4de64d75390854d82\"}"),
+                          "redmine.json");
         return war;
     }
 
