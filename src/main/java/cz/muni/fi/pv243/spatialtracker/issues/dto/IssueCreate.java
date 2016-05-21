@@ -1,30 +1,42 @@
-
 package cz.muni.fi.pv243.spatialtracker.issues.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import cz.muni.fi.pv243.spatialtracker.issues.IssueEnums;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import static com.fasterxml.jackson.annotation.JsonTypeInfo.As.WRAPPER_OBJECT;
+import static com.fasterxml.jackson.annotation.JsonTypeInfo.Id.NAME;
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import cz.muni.fi.pv243.spatialtracker.issues.IssueCategory;
+import cz.muni.fi.pv243.spatialtracker.issues.IssuePriority;
+import javax.validation.constraints.NotNull;
+import static lombok.AccessLevel.PRIVATE;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
+@ToString
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor(access = PRIVATE)
 public class IssueCreate {
 
-    @Getter
+    @NotNull
     @JsonProperty("subject")
     private String subject;
 
-    @Getter
     @JsonProperty("description")
     private String description;
 
+    @NotNull
     @JsonProperty("priority")
-    private IssueEnums.Priority priority;
+    private IssuePriority priority;
 
-//    @JsonProperty("status")
-//    private IssueEnums.Status status;
-
+    @NotNull
     @JsonProperty("category")
-    private IssueEnums.Category category;
+    private IssueCategory category;
 
-//    @JsonProperty("author")
-//    private IssueEnums.Author author;
+    @JsonProperty("coords")
+    private Coordinates coords;
 
 }

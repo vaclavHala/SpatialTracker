@@ -3,7 +3,7 @@ package cz.muni.fi.pv243.spatialtracker.issues.redmine.dto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
-import cz.muni.fi.pv243.spatialtracker.redmine.dto.Coordinates;
+import cz.muni.fi.pv243.spatialtracker.issues.dto.Coordinates;
 import static lombok.AccessLevel.PRIVATE;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
