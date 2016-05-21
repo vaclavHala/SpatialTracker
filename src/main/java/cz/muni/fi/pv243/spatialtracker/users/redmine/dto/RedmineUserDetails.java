@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import cz.muni.fi.pv243.spatialtracker.users.dto.RawIcon;
+import java.util.List;
 import static lombok.AccessLevel.PRIVATE;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.experimental.Accessors;
 
 @Getter
 @NoArgsConstructor(access = PRIVATE)
@@ -28,4 +28,7 @@ public class RedmineUserDetails {
     @JsonProperty
     @JsonUnwrapped
     private RawIcon icon;
+
+    @JsonProperty("groups")
+    private List<RedmineGroup> memberships;
 }

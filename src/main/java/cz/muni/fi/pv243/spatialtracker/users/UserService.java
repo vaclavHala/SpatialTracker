@@ -8,6 +8,8 @@ public interface UserService {
 
     String register(final UserCreate newUser) throws MulticauseError;
 
+    void addToGroup(String login, UserGroup group) throws MulticauseError ;
+
     Optional<UserDetails> detailsSomeUser(final String login);
 
     //TODO need to come up with how / if we need this

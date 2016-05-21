@@ -6,6 +6,7 @@ import com.mashape.unirest.http.Unirest;
 import cz.muni.fi.pv243.spatialtracker.SpatialTracker;
 import cz.muni.fi.pv243.spatialtracker.config.Config;
 import static cz.muni.fi.pv243.spatialtracker.users.BasicAuthUtils.assembleBasicAuthHeader;
+import static cz.muni.fi.pv243.spatialtracker.users.UserGroup.LOGGED_IN;
 import cz.muni.fi.pv243.spatialtracker.users.dto.UserCreate;
 import cz.muni.fi.pv243.spatialtracker.users.dto.UserDetails;
 import java.io.IOException;
@@ -166,5 +167,29 @@ public class UserResourceIT {
         softly.assertThat(respDetailsCurrent.getStatus()).isEqualTo(UNAUTHORIZED.getStatusCode());
         softly.assertThat(respDetailsCurrent.getHeaders()).containsKey(WWW_AUTHENTICATE);
         softly.assertAll();
+    }
+
+    @Test
+    public void shouldPutNewlyRegisteredUserToLoggedInUsersGroup(
+            final @ArquillianResource URL appUrl) throws Exception {
+        String username = "someone";
+        String password = "something";
+        String userApiUrl = appUrl + "rest/user/";
+        UserCreate newUser = new UserCreate(username, password, "mail@me.now");
+
+        Unirest.post(userApiUrl)
+               .header(CONTENT_TYPE, APPLICATION_JSON)
+               .body(this.json.writeValueAsString(newUser))
+               .asString();
+
+        String basicAuthHeader = assembleBasicAuthHeader(username, password);
+        HttpResponse<String> respFind =
+                Unirest.get(userApiUrl + "me")
+                       .header(ACCEPT, APPLICATION_JSON)
+                       .header(AUTHORIZATION, basicAuthHeader)
+                       .asString();
+        UserDetails foundUser = this.json.readValue(respFind.getBody(), UserDetails.class);
+
+        assertThat(foundUser.memberships()).containsOnly(LOGGED_IN);
     }
 }
