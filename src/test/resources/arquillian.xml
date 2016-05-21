@@ -26,7 +26,7 @@
                 remove: true
             links:
                 - postgres-aq:postgres
-            portBindings: [3000/tcp]
+            portBindings: [3001->3000/tcp]
             await:
                 # Aq Cube claims to have http strategy which would be perfect here,
                 # but again it is not in the available release yet

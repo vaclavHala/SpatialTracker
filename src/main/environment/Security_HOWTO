@@ -1,0 +1,11 @@
+Add these lines to $WILDFLY_HOME/standalone/configuration/standalone.xml
+
+<security-domain name="spatial-tracker" cache-type="default">
+    <authentication>
+        <login-module code="cz.muni.fi.pv243.spatialtracker.users.redmine.RedmineLoginModule" flag="required"/>
+    </authentication>
+</security-domain>
+
+or execute this command:
+
+cat jboss-add-login-module.cli | $WILDFLY_HOME/bin/jboss-cli.sh
