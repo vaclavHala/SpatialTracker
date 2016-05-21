@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Start Page</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+	<h1>Hello World!</h1>
+	<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+		xmlns:ui="http://java.sun.com/jsf/facelets"
+		template="/templates/main.xhtml">
+
+		<div ng-controller="MessageController">
+			<div class="panel panel-default">
+				<div class="panel-heading">Post Message</div>
+				<div class="panel-body">
+					<form ng-submit="addMessage(message)">
+						<div class="form-group">
+							<label for="name" class="control-label">Name:</label> <input
+								type="text" id="name" ng-model="name" class="form-control"
+								required="required" />
+						</div>
+
+						<div class="form-group">
+							<label for="message" class="control-label">Message:</label> <input
+								type="text" id="message" ng-model="messageText"
+								class="form-control" required="required" />
+						</div>
+
+						<div class="form-group">
+							<input type="submit" class="btn btn-primary" value="Add" />
+						</div>
+					</form>
+				</div>
+			</div>
+
+			<div class="well">
+				<dl id="chat" class="dl-horizontal">
+					<dt ng-repeat-start="message in messages | reverse">{{
+						message.name }}</dt>
+					<dd ng-repeat-end="">{{ message.text }}</dd>
+				</dl>
+			</div>
+		</div>
+
+		<script>
+		        var restContext = document.location.pathname.replace(/[^/]*$/, '') + 'rest';
+
+		        function MessageController($scope, $resource) {
+
+		            var roomName = 'testing';
+		            var Message = $resource(restContext + '/messages/' + roomName);
+
+		            $scope.messages = [];
+		            $scope.name = localStorage.name || '';
+
+		            $scope.$watch('name', function() {
+		                localStorage.name = $scope.name;
+		            });
+
+		            $scope.addMessage = function() {
+		                var m = new Message();
+		                m.name = $scope.name;
+		                m.text = $scope.messageText;
+		                m.$save();
+
+		                $scope.messageText = '';
+		            }
+
+		            Socket.subscribe('/socket/messages/' + roomName, function(message) {
+		                $scope.messages.push(message);
+		                $scope.$digest();
+		            });
+
+		            Message.query(function(messages) {
+		                $scope.messages = messages;
+		            });
+		        }
+		    </script>
+		<script type="text/javascript"
+			src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.3/angular.min.js" />
+		<script type="text/javascript"
+			src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.3/angular-resource.min.js" />
+		<script type="text/javascript" src="socket.js" />
+		<script>
+		        var app = angular.module('app', ['ngResource'])
+		                .filter('reverse', function() {
+		                    return function(items) {
+		                        return items.slice().reverse();
+		                    };
+		                });
+		        angular.bootstrap(document.querySelector('body'), ['app']);
+		    </script>
+	</ui:composition>
+
+</body>
+
+</html>
