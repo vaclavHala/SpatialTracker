@@ -1,4 +1,4 @@
-Add these lines to $WILDFLY_HOME/standalone/configuration/standalone.xml
+Add these lines to $WILDFLY_HOME/standalone/configuration/standalone.xml, to node <subsystem xmlns="urn:jboss:domain:security:1.2"> - <security-domains>
 
 <security-domain name="spatial-tracker" cache-type="default">
     <authentication>
