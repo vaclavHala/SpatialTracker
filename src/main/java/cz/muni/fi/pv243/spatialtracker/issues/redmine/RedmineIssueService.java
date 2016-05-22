@@ -11,7 +11,9 @@ import static cz.muni.fi.pv243.spatialtracker.config.PropertyType.REDMINE_BASE_U
 import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueCreate;
 import cz.muni.fi.pv243.spatialtracker.issues.redmine.dto.RedmineIssueCreate;
 import cz.muni.fi.pv243.spatialtracker.issues.IssueService;
+import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueDetailsBrief;
 import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueDetailsFull;
+import cz.muni.fi.pv243.spatialtracker.issues.filter.IssueFilter;
 import cz.muni.fi.pv243.spatialtracker.issues.redmine.dto.RedmineIssueCreateResponse;
 import cz.muni.fi.pv243.spatialtracker.issues.redmine.dto.RedmineIssueDetails;
 import static cz.muni.fi.pv243.spatialtracker.users.BasicAuthUtils.assembleBasicAuthHeader;
@@ -136,5 +138,11 @@ public class RedmineIssueService implements IssueService {
         } catch (ProcessingException e) {
             throw new ServerError(e);
         }
+    }
+
+    @Override
+    public List<IssueDetailsBrief> searchFiltered(final List<IssueFilter> filters) {
+        System.out.println(filters);
+    return emptyList();
     }
 }
