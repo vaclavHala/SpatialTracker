@@ -1,8 +1,12 @@
 package cz.muni.fi.pv243.spatialtracker.users;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Base64;
+import static lombok.AccessLevel.PRIVATE;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 public class BasicAuthUtils {
 
@@ -23,9 +27,13 @@ public class BasicAuthUtils {
 
     @Getter
     @AllArgsConstructor
+    @NoArgsConstructor(access = PRIVATE)
     public static class LoginPass {
 
-        private final String login;
-        private final String pass;
+        @JsonProperty("login")
+        private String login;
+        
+        @JsonProperty("pass")
+        private String pass;
     }
 }

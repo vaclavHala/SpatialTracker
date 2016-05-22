@@ -184,7 +184,7 @@ public class RedmineUserService implements UserService {
             if (redmineResponse.get().getStatus() == 200) {
                 return redmineResponse.get().readEntity(RedmineUserDetailsCurrentWrapper.class).user();
             } else if (redmineResponse.get().getStatus() == 401) {
-                throw new AuthenticationException();
+                throw new ServerError("Got status 401 from redmine");
             } else {
                 List<String> errors = this.extractErrorReport(redmineResponse.get());
                 log.info("Failed to display user: {}", errors);
