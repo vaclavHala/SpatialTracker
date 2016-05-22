@@ -8,7 +8,7 @@ import static cz.muni.fi.pv243.spatialtracker.config.PropertyType.REDMINE_API_KE
 import static cz.muni.fi.pv243.spatialtracker.config.PropertyType.REDMINE_BASE_URL;
 import static cz.muni.fi.pv243.spatialtracker.users.BasicAuthUtils.assembleBasicAuthHeader;
 import cz.muni.fi.pv243.spatialtracker.users.UserGroup;
-import static cz.muni.fi.pv243.spatialtracker.users.UserGroup.LOGGED_IN;
+import static cz.muni.fi.pv243.spatialtracker.users.UserGroup.USER;
 import cz.muni.fi.pv243.spatialtracker.users.dto.*;
 import cz.muni.fi.pv243.spatialtracker.users.dto.UserDetails.UserDetailsBuilder;
 import cz.muni.fi.pv243.spatialtracker.users.redmine.dto.*;
@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import static javax.ws.rs.client.Entity.json;
@@ -64,7 +65,7 @@ public class RedmineUserService implements UserService {
                 log.info("User was created in Redmine");
                 RedmineUserCreateResponse resp = redmineResponse.get().readEntity(RedmineUserCreateResponse.class);
                 try {
-                    this.addToGroup(resp.id(), this.groupMapper.toRedmineId(LOGGED_IN));
+                    this.addToGroup(resp.id(), this.groupMapper.toRedmineId(USER));
                 } catch (MulticauseError e) {
                     log.warn("Could not add new user to group. Deleting from Redmine.");
                     this.deleteCurrentUser(newUser.login(), newUser.password());
@@ -184,7 +185,7 @@ public class RedmineUserService implements UserService {
             if (redmineResponse.get().getStatus() == 200) {
                 return redmineResponse.get().readEntity(RedmineUserDetailsCurrentWrapper.class).user();
             } else if (redmineResponse.get().getStatus() == 401) {
-                throw new ServerError("Got status 401 from redmine");
+                throw new MulticauseError(asList("Unauthorized"));
             } else {
                 List<String> errors = this.extractErrorReport(redmineResponse.get());
                 log.info("Failed to display user: {}", errors);

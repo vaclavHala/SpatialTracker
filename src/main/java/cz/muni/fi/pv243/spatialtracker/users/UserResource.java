@@ -28,8 +28,8 @@ import lombok.extern.slf4j.Slf4j;
 @Consumes(APPLICATION_JSON)
 @Produces(APPLICATION_JSON)
 @Path("/user")
-@DeclareRoles("user")
-@RolesAllowed("user")
+@DeclareRoles("USER")
+@RolesAllowed("USER")
 public class UserResource {
 
     @Inject
@@ -53,7 +53,7 @@ public class UserResource {
     @PermitAll
     public Response login(LoginPass auth) {
         UserDetails user;
-        
+
         try {
             if (auth == null || (user = usersRedmine.detailsCurrentUser(auth.login(), auth.pass())) == null) {
                 throw new MulticauseError(new ArrayList<>());
@@ -61,12 +61,13 @@ public class UserResource {
         } catch (MulticauseError ex) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
-        
+
         return Response.ok(user).build();
     }
-    
+
     @GET
     @Path("/{login}")
+    @PermitAll
     public Response detailsFor(final @PathParam("login") String forLogin) {
         log.info("Request to display user: {}", forLogin);
         Optional<UserDetails> user = this.usersRedmine.detailsSomeUser(forLogin);
@@ -84,7 +85,7 @@ public class UserResource {
     @Path("/me")
     public Response detailsMe(final @HeaderParam(AUTHORIZATION) String currentUserBasicAuth) throws MulticauseError {
         LoginPass auth = decodeBasicAuthLogin(currentUserBasicAuth);
-        
+
         return Response.ok(this.usersRedmine.detailsCurrentUser(auth.login(), auth.pass())).build();
     }
 
