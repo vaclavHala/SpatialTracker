@@ -1,0 +1,10 @@
+{ 
+  "subject" : "{{lorem(1, 'words')}}",
+  "description" : "{{lorem(2)}}",
+  "priority" : "{{random('MUST_HAVE', 'SHOULD_HAVE', 'CAN_HAVE', 'WANT_TO_HAVE')}}",
+  "category" : "{{random('ADD','REMOVE','REPAIR','COMPLAINT')}}",
+  "coords" : {
+    "lon" : "{{floating()}}",
+    "lat" : "{{floating()}}"
+  }
+}
