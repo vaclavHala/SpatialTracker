@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import static com.fasterxml.jackson.annotation.JsonTypeInfo.As.WRAPPER_OBJECT;
 import static com.fasterxml.jackson.annotation.JsonTypeInfo.Id.NAME;
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import cz.muni.fi.pv243.spatialtracker.CustomField;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -14,6 +13,8 @@ import lombok.ToString;
 
 @ToString
 @AllArgsConstructor
+@JsonTypeName("issue")
+@JsonTypeInfo(include = WRAPPER_OBJECT, use = NAME)
 public class RedmineIssueCreate {
 
         @JsonProperty("project_id")
@@ -24,6 +25,12 @@ public class RedmineIssueCreate {
 
     @JsonProperty("subject")
     private String subject;
+
+    @JsonProperty("description")
+    private String description;
+
+    @JsonProperty("category_id")
+    private long categoryId;
 
     @JsonProperty("priority_id")
     private long priorityId;

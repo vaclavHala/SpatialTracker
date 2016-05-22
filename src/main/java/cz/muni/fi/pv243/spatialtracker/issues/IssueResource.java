@@ -4,11 +4,14 @@ import cz.muni.fi.pv243.spatialtracker.AuthenticationException;
 import cz.muni.fi.pv243.spatialtracker.MulticauseError;
 import cz.muni.fi.pv243.spatialtracker.issues.dto.Coordinates;
 import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueCreate;
+import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueDetailsFull;
 import cz.muni.fi.pv243.spatialtracker.users.BasicAuthUtils;
 import cz.muni.fi.pv243.spatialtracker.users.BasicAuthUtils.LoginPass;
 import static cz.muni.fi.pv243.spatialtracker.users.BasicAuthUtils.decodeBasicAuthLogin;
 import cz.muni.fi.pv243.spatialtracker.users.dto.UserCreate;
+import cz.muni.fi.pv243.spatialtracker.users.dto.UserDetails;
 import java.net.URI;
+import java.util.Optional;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -48,18 +51,32 @@ public class IssueResource {
         log.info("New issue report: {}", issue);
         long newIssueResourceId = this.issueService.report(issue, auth.login(), auth.pass());
         URI newIssueResourcePath = userApiLocation.getAbsolutePathBuilder()
-                                                 .path(String.valueOf(newIssueResourceId)).build();
+                                                  .path(String.valueOf(newIssueResourceId)).build();
         return Response.created(newIssueResourcePath).build();
     }
 
-//    @GET
-//    @Produces(APPLICATION_JSON)
-//    public void listIssues() {
-//        String issues = this.restClient.target(this.redmineUrl + "projects.json")
-//                                       .request(APPLICATION_JSON)
-//                                       .header("X-Redmine-API-Key", this.redmineKey)
-//                                       .buildGet()
-//                                       .invoke(String.class);
-//        log.info("issues {}", issues);
-//    }
+    @GET
+    @Path("/{login}")
+    public Response detailsFor(final @PathParam("login") long forId) {
+        log.info("Request to display isue #{}", forId);
+        Optional<IssueDetailsFull> issue = this.issueService.detailsFor(forId);
+        if (issue.isPresent()) {
+            log.info("Issue #{} was found", forId);
+            log.debug("Issue #{}: {}", forId, issue.get());
+            return Response.ok(issue.get()).build();
+        } else {
+            log.info("Issue #{} does not exist", forId);
+            return Response.status(404).build();
+        }
+    }
+
+    //    @GET
+    //    public void listIssues() {
+    //        String issues = this.restClient.target(this.redmineUrl + "projects.json")
+    //                                       .request(APPLICATION_JSON)
+    //                                       .header("X-Redmine-API-Key", this.redmineKey)
+    //                                       .buildGet()
+    //                                       .invoke(String.class);
+    //        log.info("issues {}", issues);
+    //    }
 }
