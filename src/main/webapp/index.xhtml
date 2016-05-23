@@ -30,7 +30,7 @@
 
 			<div class="well">
 				<dl id="chat" class="dl-horizontal">
-					<dt ng-repeat-start="message in messages | reverse">{{ message.name }}</dt>
+					<dt ng-repeat-start="message in messages | reverse">{{ message.name }}  <i>{{ message.created }}</i></dt>
 					<dd ng-repeat-end="">{{ message.text }}</dd>
 				</dl>
 			</div>

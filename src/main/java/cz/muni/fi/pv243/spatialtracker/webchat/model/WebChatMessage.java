@@ -1,6 +1,7 @@
 package cz.muni.fi.pv243.spatialtracker.webchat.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Date;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -20,4 +21,7 @@ public class WebChatMessage {
 
 	@JsonProperty("text")
 	private String text;
+
+	@JsonProperty("created")
+	private Date created;
 }

@@ -1,5 +1,6 @@
 package cz.muni.fi.pv243.spatialtracker.webchat;
 
+import java.util.Date;
 import java.util.List;
 
 import javax.enterprise.event.Event;
@@ -38,6 +39,7 @@ public class WebChatEndpoint {
 		WebChatMessage fullMessage = new WebChatMessage();
 		fullMessage.name("John Doe");//TODO
 		fullMessage.text(newMessage.text());
+		fullMessage.created(new Date());
 		messages.addMessage(roomName, fullMessage);
 		newMessageEvent.fire(new NewWebChatMessageEvent(roomName, fullMessage));
 	}

@@ -21,11 +21,12 @@ var View = {
     addMessageToView : function( message ) {
         var name = message.name;
         var text = message.text;
+        var created = message.created;
         
         var chat = document.getElementById('chat');
         var dt = document.createElement('dt');
         var dd = document.createElement('dd');
-        dt.innerText = name;
+        dt.innerText = name  + ' <i>' + created +'</i>';
         dd.innerText = text;
         chat.insertBefore(dd, chat.firstChild);
         chat.insertBefore(dt, chat.firstChild);
