@@ -1,18 +1,32 @@
 -- Redmine via Docker HOWTO --
-sudo docker run --name postgres -e POSTGRES_USER=redmine postgres
-    // will run interactive, can be run in background via -d
+    Before running the Spatial Tracker itself environment needs to be set up
+    (It is not required to build images for running tests of the project)
+    Redmine and Postgres docker containers need to be built and started
+    Custom Dockerfiles for each are in environment/postgres and environment/redmine
 
-    // wait for postgres to fire up
-sudo docker run --name redmine --link postgres:postgres -p 3000:3000 redmine
-    // for background also -d
-    // for mapping to different port -p <other port>:3000
+cd environment/postgres && sudo docker build -t pg-red .
+cd environment/redmine && sudo docker build -t red .
 
-go to http://localhost:3000/settings in browser
-    //login:pass admin:admin
-tab API, enable REST API, save
+    then run the containers (from any directory)
 
-    for redmine webserver and db logging
-in /path/to/redmine/config copy additionalConfig.rb and uncomment debug logging
+sudo docker run --name pg-red -d pg-red
+sudo docker run --name red --link pg-red:postgres -p 3000:3000 -d red
+
+    if any name clashes occured either when creating images or running containers
+    just use different names (in place of pg-red, red), all will work the same
+
+go to http://localhost:3000/settings in browser, if all is well login screen appears
+    login:pass
+    admin:admin
+log in as admin, go to My Account, click Show API Access Key in right column
+    api_key:264acfed33b8af628991dda4de64d75390854d82
+if the api key displayed matches the one above environment is ready
+
+Other:
+
+    for looking at redmine log
+sudo docker exec -ti red bash
+tail -f log/production.log (in new shell opened by above command)
 
     for logging jax rs http messages, in wildfly standalone.xml
 <logger category="org.apache.http.wire">
