@@ -72,7 +72,7 @@ public class IssueResourceIT {
     @Before
     public void initDb() throws SQLException, InterruptedException, IOException {
         //if we dont stop redmine it will be impossible to drop the db
-        cube.stop("redmine-aq");
+        cube.stop("wf-with-red");
         //connect to the container with postgres, in the container execute sql script which recreates redmine db
         //docker and this address are used to run the test, so it is reasonably safe to assume it will work fine
         List<String> cleanupScript =
@@ -85,7 +85,7 @@ public class IssueResourceIT {
 
         log.info("Cleanup exited: {}", cleanup.waitFor());
         cleanup.destroy();
-        cube.start("redmine-aq");
+        cube.start("wf-with-red");
     }
 
     @Test
