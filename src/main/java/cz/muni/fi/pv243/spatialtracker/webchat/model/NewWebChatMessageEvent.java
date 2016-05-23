@@ -1,28 +1,15 @@
 package cz.muni.fi.pv243.spatialtracker.webchat.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@ToString
 public class NewWebChatMessageEvent {
 	private String roomName;
 	private WebChatMessage message;
-
-	public NewWebChatMessageEvent(String roomName, WebChatMessage message) {
-		this.roomName = roomName;
-		this.message = message;
-	}
-
-	public String getRoomName() {
-		return roomName;
-	}
-
-	public void setRoomName(String roomName) {
-		this.roomName = roomName;
-	}
-
-	public WebChatMessage getMessage() {
-		return message;
-	}
-
-	public void setMessage(WebChatMessage message) {
-		this.message = message;
-	}
-
 }

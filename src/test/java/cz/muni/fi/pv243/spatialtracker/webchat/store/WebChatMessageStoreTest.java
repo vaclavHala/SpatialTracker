@@ -58,12 +58,12 @@ public class WebChatMessageStoreTest {
 		assertEquals(msgs.size(), 2);
 
 		WebChatMessage msg = msgs.get(0);
-		assertEquals(msg.getName(), sampleName1);
-		assertEquals(msg.getText(), sampleText1);
+		assertEquals(msg.name(), sampleName1);
+		assertEquals(msg.text(), sampleText1);
 
 		msg = msgs.get(1);
-		assertEquals(msg.getName(), sampleName2);
-		assertEquals(msg.getText(), sampleText2);
+		assertEquals(msg.name(), sampleName2);
+		assertEquals(msg.text(), sampleText2);
 	}
 
 	private final String differentKey = "different key";
@@ -81,7 +81,7 @@ public class WebChatMessageStoreTest {
 		assertEquals(msgs.size(), 1);
 
 		WebChatMessage msg = msgs.get(0);
-		assertEquals(msg.getName(), differentName);
-		assertEquals(msg.getText(), differentText);
+		assertEquals(msg.name(), differentName);
+		assertEquals(msg.text(), differentText);
 	}
 }

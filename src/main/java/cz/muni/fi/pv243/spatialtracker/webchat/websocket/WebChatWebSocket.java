@@ -33,13 +33,13 @@ public class WebChatWebSocket {
 	}
 
 	public void updateClients(@Observes NewWebChatMessageEvent newMessage) {
-		String roomName = newMessage.getRoomName();
+		String roomName = newMessage.roomName();
 		if (roomName == null) {
 			throw new NullPointerException("roomName");
 		}
 		sessions.getSessions(roomName).stream().filter(session -> session.isOpen()).forEach(session -> {
 			try {
-				session.getBasicRemote().sendObject(newMessage.getMessage());
+				session.getBasicRemote().sendObject(newMessage.message());
 			} catch (Exception e) {
 				log.log(Level.WARNING, e.getMessage(), e);
 			}

@@ -22,8 +22,8 @@ public class WebChatMessageEncoder implements Encoder.Text<WebChatMessage> {
 	@Override
 	public String encode(WebChatMessage arg) throws EncodeException {
 		return Json.createObjectBuilder()
-				.add("name", arg.getName())
-				.add("text", arg.getText())
+				.add("name", arg.name())
+				.add("text", arg.text())
 				.build().toString();
 	}
 

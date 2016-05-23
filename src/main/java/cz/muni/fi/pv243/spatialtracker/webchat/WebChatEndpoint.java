@@ -36,8 +36,8 @@ public class WebChatEndpoint {
 	@Consumes(MediaType.APPLICATION_JSON)
 	public void addMessage(NewWebChatMessage newMessage, @PathParam("room") String roomName) {
 		WebChatMessage fullMessage = new WebChatMessage();
-		fullMessage.setName("John Doe");//TODO
-		fullMessage.setText(newMessage.getText());
+		fullMessage.name("John Doe");//TODO
+		fullMessage.text(newMessage.text());
 		messages.addMessage(roomName, fullMessage);
 		newMessageEvent.fire(new NewWebChatMessageEvent(roomName, fullMessage));
 	}
