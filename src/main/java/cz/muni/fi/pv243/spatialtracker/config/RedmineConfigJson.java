@@ -16,4 +16,9 @@ public class RedmineConfigJson {
     @JsonProperty("base_url")
     private String baseUrl;
 
+    @JsonProperty("integration_project_id")
+    private int projectId;
+
+    @JsonProperty("integration_tracker_id")
+    private int trackerId;
 }

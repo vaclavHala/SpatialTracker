@@ -26,6 +26,9 @@ public class ConfigLoader {
             RedmineConfigJson redmine = this.json.readValue(redmineFile, RedmineConfigJson.class);
             this.config.redmineApiKey(redmine.apiKey());
             this.config.redmineBaseUrl(redmine.baseUrl());
+            this.config.projectId(redmine.projectId());
+            this.config.trackerId(redmine.trackerId());
+            log.info("New Config: {}", this.config);
         } catch (IOException e) {
             log.error("Could not find config file for Redmine: /redmine.json");
             throw new IllegalStateException(e);

@@ -63,9 +63,7 @@ public class IssueResourceIT {
                         SpatialTracker.class.getPackage())
            .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
            //for tests redmine URL is shifted by 1 to not clash with concurrently running live redmine
-           .addAsResource(new StringAsset("{\"base_url\" : \"http://127.0.0.1:3001/\"," +
-                                          "\"api_key\" : \"264acfed33b8af628991dda4de64d75390854d82\"}"),
-                          "redmine.json");
+           .addAsResource("redmine-test.json", "redmine.json");
         return war;
     }
 
