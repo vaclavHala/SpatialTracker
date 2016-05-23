@@ -81,3 +81,22 @@ spatialTrackerControllers.controller('LogoutController', ['$scope', '$http',
         window.location.reload();
     }
 ]);
+
+spatialTrackerControllers.controller('ProjectController', ['$scope', '$http',
+    function ($scope, $http) {
+        $scope.newProject = {};
+        $scope.createProject = function () {
+            delete $scope.success;
+            delete $scope.errors;
+            
+            $http.post('rest/project', $scope.newProject)
+                .success(function() {
+                    $scope.success = true;
+                })
+                .error(function (data) {
+                    $scope.errors = data.errors;
+                })
+            ;
+        };
+    }
+]);

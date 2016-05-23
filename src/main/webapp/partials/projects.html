@@ -1,0 +1,26 @@
+<div class="panel panel-default">
+    <div class="panel-heading">New project</div>
+    <div class="panel-body">
+        <form ng-submit="createProject()">
+            <div ng-include="'formMessage.html'"></div>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="identifier" class="control-label">Identifier:</label>
+                        <input type="text" id="identifier" ng-model="newProject.identifier" class="form-control" required="required" />
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="name" class="control-label">Name:</label>
+                        <input type="text" id="name" ng-model="newProject.name" class="form-control" required="required" />
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <br>
+                    <button type="submit" class="btn btn-primary">Create</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
