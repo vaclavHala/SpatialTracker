@@ -1,28 +1,15 @@
 package cz.muni.fi.pv243.spatialtracker.webchat.model;
 
 public class NewWebChatMessage {
-	private String roomName;
-	private WebChatMessage message;
+	private String text;
 
-	public NewWebChatMessage(String roomName, WebChatMessage message) {
-		this.roomName = roomName;
-		this.message = message;
+	public String getText() {
+		return text;
 	}
 
-	public String getRoomName() {
-		return roomName;
+	public void setText(String text) {
+		this.text = text;
 	}
-
-	public void setRoomName(String roomName) {
-		this.roomName = roomName;
-	}
-
-	public WebChatMessage getMessage() {
-		return message;
-	}
-
-	public void setMessage(WebChatMessage message) {
-		this.message = message;
-	}
-
+	
+	
 }

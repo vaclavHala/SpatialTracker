@@ -1,9 +1,7 @@
 var Rest = {
 
     context: function(path) {
-    	
         var p = document.location.pathname.replace(/[^/]*$/, '') + 'rest' path;
-        alert(p);
         return p;
     },
 

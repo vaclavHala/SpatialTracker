@@ -16,12 +16,6 @@
 				<div class="panel-body">
 					<form ng-submit="addMessage(message)">
 						<div class="form-group">
-							<label for="name" class="control-label">Name:</label> <input
-								type="text" id="name" ng-model="name" class="form-control"
-								required="required" />
-						</div>
-
-						<div class="form-group">
 							<label for="message" class="control-label">Message:</label> <input
 								type="text" id="message" ng-model="messageText"
 								class="form-control" required="required" />
@@ -36,8 +30,7 @@
 
 			<div class="well">
 				<dl id="chat" class="dl-horizontal">
-					<dt ng-repeat-start="message in messages | reverse">{{
-						message.name }}</dt>
+					<dt ng-repeat-start="message in messages | reverse">{{ message.name }}</dt>
 					<dd ng-repeat-end="">{{ message.text }}</dd>
 				</dl>
 			</div>
@@ -60,7 +53,6 @@
 
 		            $scope.addMessage = function() {
 		                var m = new Message();
-		                m.name = $scope.name;
 		                m.text = $scope.messageText;
 		                m.$save();
 

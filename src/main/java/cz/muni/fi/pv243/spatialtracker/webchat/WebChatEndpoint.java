@@ -13,6 +13,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import cz.muni.fi.pv243.spatialtracker.webchat.model.NewWebChatMessage;
+import cz.muni.fi.pv243.spatialtracker.webchat.model.NewWebChatMessageEvent;
 import cz.muni.fi.pv243.spatialtracker.webchat.model.WebChatMessage;
 import cz.muni.fi.pv243.spatialtracker.webchat.store.WebChatMessageStore;
 
@@ -23,7 +24,7 @@ public class WebChatEndpoint {
 	private WebChatMessageStore messages;
 
 	@Inject
-	private Event<NewWebChatMessage> newMessageEvent;
+	private Event<NewWebChatMessageEvent> newMessageEvent;
 
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
@@ -33,8 +34,11 @@ public class WebChatEndpoint {
 
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
-	public void addMessage(WebChatMessage message, @PathParam("room") String roomName) {
-		messages.addMessage(roomName, message);
-		newMessageEvent.fire(new NewWebChatMessage(roomName, message));
+	public void addMessage(NewWebChatMessage newMessage, @PathParam("room") String roomName) {
+		WebChatMessage fullMessage = new WebChatMessage();
+		fullMessage.setName("John Doe");//TODO
+		fullMessage.setText(newMessage.getText());
+		messages.addMessage(roomName, fullMessage);
+		newMessageEvent.fire(new NewWebChatMessageEvent(roomName, fullMessage));
 	}
 }

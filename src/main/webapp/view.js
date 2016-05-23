@@ -2,7 +2,6 @@ var View = {
     
     sendMessageForm : function( form ) {
         var message = {
-            name: form.name.value,
             text: form.message.value
         };
         
