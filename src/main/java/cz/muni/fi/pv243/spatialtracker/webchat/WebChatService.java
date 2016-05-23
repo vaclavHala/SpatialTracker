@@ -19,7 +19,7 @@ import cz.muni.fi.pv243.spatialtracker.webchat.model.WebChatMessage;
 import cz.muni.fi.pv243.spatialtracker.webchat.store.WebChatMessageStore;
 
 @Path("/messages/{room}")
-public class WebChatEndpoint {
+public class WebChatService {
 
 	@Inject
 	private WebChatMessageStore messages;
