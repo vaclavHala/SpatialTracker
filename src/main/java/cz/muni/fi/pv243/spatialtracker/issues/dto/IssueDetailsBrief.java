@@ -3,6 +3,7 @@ package cz.muni.fi.pv243.spatialtracker.issues.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -15,6 +16,7 @@ import lombok.ToString;
  */
 @ToString
 @Getter
+@EqualsAndHashCode
 @AllArgsConstructor
 public class IssueDetailsBrief {
 

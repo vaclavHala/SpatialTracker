@@ -1,4 +1,3 @@
-
 package cz.muni.fi.pv243.spatialtracker.issues.redmine.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -12,11 +11,8 @@ import lombok.ToString;
 @Getter
 @EqualsAndHashCode
 @NoArgsConstructor(access = PRIVATE)
-public class RedmineAuthor {
+public class RedmineIssueDetailsSingleWrapper {
 
-    @JsonProperty(value = "id")
-    private int id;
-
-    @JsonProperty(value = "name")
-    private String fullName;
+    @JsonProperty("issue")
+    private RedmineIssueDetails issue;
 }

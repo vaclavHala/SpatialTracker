@@ -45,14 +45,14 @@ COMMENT ON SCHEMA public IS 'standard public schema';
 
 
 --
--- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: 
+-- Name: plpgsql; Type: EXTENSION; Schema: -; Owner:
 --
 
 CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
 
 
 --
--- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: 
+-- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner:
 --
 
 COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
@@ -2378,11 +2378,11 @@ SELECT pg_catalog.setval('custom_field_enumerations_id_seq', 1, false);
 -- Data for Name: custom_fields; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-INSERT INTO custom_fields (id, type, name, field_format, possible_values, regexp, min_length, max_length, is_required, is_for_all, is_filter, "position", searchable, default_value, editable, visible, multiple, format_store, description) VALUES (2, 'IssueCustomField', 'lat', 'float', NULL, '', NULL, NULL, true, false, false, 1, false, '', true, true, false, '--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess
+INSERT INTO custom_fields (id, type, name, field_format, possible_values, regexp, min_length, max_length, is_required, is_for_all, is_filter, "position", searchable, default_value, editable, visible, multiple, format_store, description) VALUES (2, 'IssueCustomField', 'lat', 'float', NULL, '', NULL, NULL, true, false, true, 1, false, '', true, true, false, '--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess
 url_pattern: ''''
 ', 'latitude
 -90 (south) .. 90 (north)');
-INSERT INTO custom_fields (id, type, name, field_format, possible_values, regexp, min_length, max_length, is_required, is_for_all, is_filter, "position", searchable, default_value, editable, visible, multiple, format_store, description) VALUES (3, 'IssueCustomField', 'lon', 'float', NULL, '', NULL, NULL, true, false, false, 2, false, '', true, true, false, '--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess
+INSERT INTO custom_fields (id, type, name, field_format, possible_values, regexp, min_length, max_length, is_required, is_for_all, is_filter, "position", searchable, default_value, editable, visible, multiple, format_store, description) VALUES (3, 'IssueCustomField', 'lon', 'float', NULL, '', NULL, NULL, true, false, true, 2, false, '', true, true, false, '--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess
 url_pattern: ''''
 ', 'longitude
 -180 (west) .. 180 (east)');

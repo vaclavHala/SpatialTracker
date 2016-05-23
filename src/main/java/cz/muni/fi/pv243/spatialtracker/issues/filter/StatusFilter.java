@@ -1,8 +1,7 @@
-
 package cz.muni.fi.pv243.spatialtracker.issues.filter;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import cz.muni.fi.pv243.spatialtracker.issues.IssueCategory;
+import cz.muni.fi.pv243.spatialtracker.issues.IssueStatus;
 import static java.util.Arrays.asList;
 import java.util.HashSet;
 import java.util.Set;
@@ -16,12 +15,12 @@ import lombok.ToString;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = PRIVATE)
-public class CategoryFilter extends IssueFilter{
+public class StatusFilter extends IssueFilter {
 
     @JsonProperty("in")
-    private Set<IssueCategory> interestCategories;
+    private Set<IssueStatus> interestStates;
 
-    public CategoryFilter(final IssueCategory... cats){
-        this.interestCategories = new HashSet<>(asList(cats));
+    public StatusFilter(final IssueStatus... stats) {
+        this.interestStates = new HashSet<>(asList(stats));
     }
 }

@@ -9,9 +9,11 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import cz.muni.fi.pv243.spatialtracker.CustomField;
 import java.util.List;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 @ToString
+@EqualsAndHashCode
 @AllArgsConstructor
 @JsonTypeName("issue")
 @JsonTypeInfo(include = WRAPPER_OBJECT, use = NAME)

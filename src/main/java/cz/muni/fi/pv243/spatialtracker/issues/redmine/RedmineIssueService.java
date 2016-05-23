@@ -6,16 +6,18 @@ import cz.muni.fi.pv243.spatialtracker.CustomField;
 import cz.muni.fi.pv243.spatialtracker.MulticauseError;
 import cz.muni.fi.pv243.spatialtracker.ServerError;
 import cz.muni.fi.pv243.spatialtracker.config.Property;
+import static cz.muni.fi.pv243.spatialtracker.config.PropertyType.INTEGRATION_PROJECT_ID;
 import static cz.muni.fi.pv243.spatialtracker.config.PropertyType.REDMINE_API_KEY;
 import static cz.muni.fi.pv243.spatialtracker.config.PropertyType.REDMINE_BASE_URL;
 import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueCreate;
 import cz.muni.fi.pv243.spatialtracker.issues.redmine.dto.RedmineIssueCreate;
 import cz.muni.fi.pv243.spatialtracker.issues.IssueService;
+import cz.muni.fi.pv243.spatialtracker.issues.dto.Coordinates;
 import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueDetailsBrief;
 import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueDetailsFull;
 import cz.muni.fi.pv243.spatialtracker.issues.filter.IssueFilter;
-import cz.muni.fi.pv243.spatialtracker.issues.redmine.dto.RedmineIssueCreateResponse;
-import cz.muni.fi.pv243.spatialtracker.issues.redmine.dto.RedmineIssueDetails;
+import cz.muni.fi.pv243.spatialtracker.issues.redmine.dto.*;
+import cz.muni.fi.pv243.spatialtracker.issues.redmine.filter.RedmineFilterComposer;
 import static cz.muni.fi.pv243.spatialtracker.users.BasicAuthUtils.assembleBasicAuthHeader;
 import cz.muni.fi.pv243.spatialtracker.users.redmine.RedmineUserService;
 import static java.lang.String.format;
@@ -23,6 +25,7 @@ import java.util.ArrayList;
 import static java.util.Collections.emptyList;
 import java.util.List;
 import java.util.Optional;
+import static java.util.stream.Collectors.toList;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.ws.rs.Path;
@@ -51,10 +54,17 @@ public class RedmineIssueService implements IssueService {
     private String redmineUrl;
 
     @Inject
+    @Property(INTEGRATION_PROJECT_ID)
+    private int projectId;
+
+    @Inject
     private Client restClient;
 
     @Inject
     private RedmineUserService userService;
+
+    @Inject
+    private RedmineFilterComposer filterComposer;
 
     @Inject
     private RedmineCategoryMapper categoryMapper;
@@ -116,7 +126,8 @@ public class RedmineIssueService implements IssueService {
             if (redmineResponse.get().getStatus() == 200) {
                 log.info("Issue #{} was found in Redmine", issueId);
 
-                RedmineIssueDetails redmineDetails = redmineResponse.get().readEntity(RedmineIssueDetails.class);
+                RedmineIssueDetails redmineDetails =
+                        redmineResponse.get().readEntity(RedmineIssueDetailsSingleWrapper.class).issue();
                 log.debug("Issue #{}: {}", issueId, redmineDetails);
                 //this.userService.
                 //TODO redmine user service needs to expose operations with user by redmine id
@@ -142,7 +153,63 @@ public class RedmineIssueService implements IssueService {
 
     @Override
     public List<IssueDetailsBrief> searchFiltered(final List<IssueFilter> filters) {
-        System.out.println(filters);
-    return emptyList();
+        String redmineQueryFilter = this.filterComposer.assembleFilters(filters);
+        log.debug("Composed redmine filter: {}", redmineQueryFilter);
+
+        return this.getAllIssuesFor(redmineQueryFilter).stream()
+                   .map((RedmineIssueDetails redmineIssue) -> {
+                       Coordinates coords = this.coordsMapper.readFrom(redmineIssue.customFields());
+                       return new IssueDetailsBrief(redmineIssue.subject(),
+                                                    coords);
+                   }).collect(toList());
     }
+
+    /**
+     * Redmine wont let us get page bigger than 100 results.
+     * We query consecutive pages (offset 0, offset 100, offset 200 ...)
+     * as long as we keep getting full 100 results.
+     * Once we get smaller result it means it is the last page and we quit.
+     */
+    private List<RedmineIssueDetails> getAllIssuesFor(final String filter) {
+        List<RedmineIssueDetails> aggregatedRedmineIssues = new ArrayList<>();
+        int offset = 0;
+        int count = 100;
+        while (true) {
+            List<RedmineIssueDetails> issuesPage = this.getPage(count, offset, filter);
+            aggregatedRedmineIssues.addAll(issuesPage);
+            offset += count;
+            if (issuesPage.size() != count) {
+                break;
+            }
+        }
+        return aggregatedRedmineIssues;
+    }
+
+    private List<RedmineIssueDetails> getPage(final int count, final int offset, final String filter) {
+        String issueUrl = format("%s/issues.json?project_id=%d&limit=%d&offset=%d&%s",
+                                 this.redmineUrl,
+                                 this.projectId,
+                                 count, offset, filter);
+        WebTarget target = this.restClient.target(issueUrl);
+        try (Closeable<Response> redmineResponse =
+                closeable(target.request(APPLICATION_JSON)
+                                .buildGet()
+                                .invoke())) {
+            if (redmineResponse.get().getStatus() == 200) {
+                List<RedmineIssueDetails> redmineIssues =
+                        redmineResponse.get().readEntity(RedmineIssueDetailsListWrapper.class).issues();
+                log.debug("Got {} issues for limit={}, offset={}",
+                          redmineIssues.size(), count, offset);
+                return redmineIssues;
+            } else {
+                log.warn("Could not fetch issues: " + redmineResponse.get().readEntity(String.class));
+                //                List<String> errors = this.extractErrorReport(redmineResponse.get());
+                List<String> errors = emptyList();
+                return emptyList();
+            }
+        } catch (ProcessingException e) {
+            throw new ServerError(e);
+        }
+    }
+
 }

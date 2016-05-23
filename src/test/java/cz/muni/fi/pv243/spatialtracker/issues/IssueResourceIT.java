@@ -1,26 +1,34 @@
 package cz.muni.fi.pv243.spatialtracker.issues;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import cz.muni.fi.pv243.spatialtracker.SpatialTracker;
 import cz.muni.fi.pv243.spatialtracker.config.Config;
 import static cz.muni.fi.pv243.spatialtracker.issues.IssueCategory.ADD;
+import static cz.muni.fi.pv243.spatialtracker.issues.IssueCategory.REMOVE;
 import static cz.muni.fi.pv243.spatialtracker.issues.IssueCategory.REPAIR;
+import static cz.muni.fi.pv243.spatialtracker.issues.IssuePriority.CAN_HAVE;
 import static cz.muni.fi.pv243.spatialtracker.issues.IssuePriority.MUST_HAVE;
 import static cz.muni.fi.pv243.spatialtracker.issues.IssuePriority.SHOULD_HAVE;
 import static cz.muni.fi.pv243.spatialtracker.issues.IssueStatus.REPORTED;
 import cz.muni.fi.pv243.spatialtracker.issues.dto.Coordinates;
 import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueCreate;
+import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueDetailsBrief;
 import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueDetailsFull;
+import cz.muni.fi.pv243.spatialtracker.issues.filter.IssueFilter;
 import static cz.muni.fi.pv243.spatialtracker.users.BasicAuthUtils.assembleBasicAuthHeader;
 import cz.muni.fi.pv243.spatialtracker.users.UserResource;
 import cz.muni.fi.pv243.spatialtracker.users.dto.UserCreate;
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import static java.util.Arrays.asList;
 import java.util.List;
+import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.HttpHeaders.ACCEPT;
 import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
@@ -36,8 +44,8 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,6 +54,9 @@ import org.junit.runner.RunWith;
 @RunAsClient
 @RunWith(Arquillian.class)
 public class IssueResourceIT {
+
+    private static final TypeReference<List<IssueDetailsBrief>> ISSUE_DETAILS_LIST_TOKEN =
+            new TypeReference<List<IssueDetailsBrief>>() {};
 
     private final ObjectMapper json = new ObjectMapper();
 
@@ -166,4 +177,49 @@ public class IssueResourceIT {
         softly.assertThat(foundIssue.coords().longitude()).isEqualTo(longitude);
         softly.assertAll();
     }
+
+    @Test
+    public void shouldFilterIssuesUsingAllGivenFilters(
+            final @ArquillianResource URL appUrl) throws Exception {
+
+        List<IssueCreate> allIssues = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/testdata/issues_100.json")))) {
+            String jsonIssue = null;
+            while ((jsonIssue = reader.readLine()) != null) {
+                IssueCreate issue = this.json.readValue(jsonIssue, IssueCreate.class);
+                allIssues.add(issue);
+                HttpResponse<String> resp =
+                        Unirest.post(appUrl + "rest/issue/")
+                               .basicAuth("admin", "admin")
+                               .header(CONTENT_TYPE, APPLICATION_JSON)
+                               .body(this.json.writeValueAsString(issue))
+                               .asString();
+                assertEquals(201, resp.getStatus());
+            }
+        }
+
+        List<IssueDetailsBrief> expectedIssues =
+                allIssues.stream()
+                         .filter(i -> i.category().equals(ADD) || i.category().equals(REMOVE))
+                         .filter(i -> i.priority().equals(CAN_HAVE) || i.priority().equals(SHOULD_HAVE) || i.priority().equals(MUST_HAVE))
+                         .filter(i -> i.coords().latitude() >= 3 && i.coords().latitude() <= 6)
+                         .filter(i -> i.coords().longitude() >= 4 && i.coords().longitude() <= 7)
+                         .map(i -> new IssueDetailsBrief(i.subject(), i.coords()))
+                         .collect(toList());
+
+        String filter = "[" +
+                        "{\"@type\":\"category\",\"in\":[\"ADD\",\"REMOVE\"]}," +
+                        "{\"@type\":\"priority\",\"min\":\"CAN_HAVE\",\"max\":\"MUST_HAVE\"}," +
+                        "{\"@type\":\"spatial\",\"lat_min\":3,\"lat_max\":6,\"lon_min\":4,\"lon_max\":7}" +
+                        "]";
+        String requestWithFilter = appUrl + "rest/issue?filter=" + URLEncoder.encode(filter, "UTF-8");
+        HttpResponse<String> respFind =
+                Unirest.get(requestWithFilter)
+                       .header(ACCEPT, APPLICATION_JSON)
+                       .asString();
+        List<IssueDetailsBrief> filteredIssues = this.json.readValue(respFind.getBody(), ISSUE_DETAILS_LIST_TOKEN);
+
+        assertThat(filteredIssues).containsOnlyElementsOf(expectedIssues);
+    }
+
 }

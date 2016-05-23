@@ -1,14 +1,12 @@
 package cz.muni.fi.pv243.spatialtracker.issues.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.*;
 import static lombok.AccessLevel.PRIVATE;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 @ToString
 @Getter
+@EqualsAndHashCode
 @AllArgsConstructor
 @NoArgsConstructor(access = PRIVATE)
 public class Coordinates {

@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
     @JsonSubTypes.Type(value = CategoryFilter.class, name = "category"),
     @JsonSubTypes.Type(value = SpatialFilter.class, name = "spatial"),
     @JsonSubTypes.Type(value = PriorityFilter.class, name = "priority"),
-
+    @JsonSubTypes.Type(value = StatusFilter.class, name = "status"),
 })
 public class IssueFilter {
 }
