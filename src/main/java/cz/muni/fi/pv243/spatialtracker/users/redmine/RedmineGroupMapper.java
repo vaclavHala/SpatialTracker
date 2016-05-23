@@ -2,7 +2,7 @@
 package cz.muni.fi.pv243.spatialtracker.users.redmine;
 
 import cz.muni.fi.pv243.spatialtracker.users.UserGroup;
-import static cz.muni.fi.pv243.spatialtracker.users.UserGroup.LOGGED_IN;
+import static cz.muni.fi.pv243.spatialtracker.users.UserGroup.USER;
 import static cz.muni.fi.pv243.spatialtracker.users.UserGroup.WORKER;
 import cz.muni.fi.pv243.spatialtracker.users.redmine.dto.RedmineGroup;
 import static java.lang.String.format;
@@ -16,7 +16,7 @@ public class RedmineGroupMapper {
 
     public UserGroup fromRedmine(final RedmineGroup redmineGroup){
         switch(redmineGroup.id()){
-            case REDMINE_LOGGED_IN: return LOGGED_IN;
+            case REDMINE_LOGGED_IN: return USER;
             case REDMINE_WORKER: return WORKER;
         }
         throw new IllegalArgumentException(format("Unknown group: %d - %s",
@@ -29,7 +29,7 @@ public class RedmineGroupMapper {
 
     public long toRedmineId(final UserGroup group){
         switch(group){
-            case LOGGED_IN: return REDMINE_LOGGED_IN;
+            case USER: return REDMINE_LOGGED_IN;
             case WORKER: return REDMINE_WORKER;
         }
         throw new IllegalArgumentException("Unknown group: "+group);

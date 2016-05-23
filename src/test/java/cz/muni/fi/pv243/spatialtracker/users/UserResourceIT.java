@@ -6,9 +6,10 @@ import com.mashape.unirest.http.Unirest;
 import cz.muni.fi.pv243.spatialtracker.SpatialTracker;
 import cz.muni.fi.pv243.spatialtracker.config.Config;
 import static cz.muni.fi.pv243.spatialtracker.users.BasicAuthUtils.assembleBasicAuthHeader;
-import static cz.muni.fi.pv243.spatialtracker.users.UserGroup.LOGGED_IN;
+import static cz.muni.fi.pv243.spatialtracker.users.UserGroup.USER;
 import cz.muni.fi.pv243.spatialtracker.users.dto.UserCreate;
 import cz.muni.fi.pv243.spatialtracker.users.dto.UserDetails;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
@@ -68,6 +69,9 @@ public class UserResourceIT {
            .addPackages(false,
                         SpatialTracker.class.getPackage())
            .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
+           //to be able to log in we need these config bits
+           .addAsWebInfResource(new File("src/main/webapp/WEB-INF/web.xml"), "web.xml")
+           .addAsWebInfResource(new File("src/main/webapp/WEB-INF/jboss-web.xml"), "jboss-web.xml")
            //for tests redmine URL is shifted by 1 to not clash with concurrently running live redmine
            .addAsResource(new StringAsset("{\"base_url\" : \"http://127.0.0.1:3001/\"," +
                                           "\"api_key\" : \"264acfed33b8af628991dda4de64d75390854d82\"}"),
@@ -190,6 +194,6 @@ public class UserResourceIT {
                        .asString();
         UserDetails foundUser = this.json.readValue(respFind.getBody(), UserDetails.class);
 
-        assertThat(foundUser.memberships()).containsOnly(LOGGED_IN);
+        assertThat(foundUser.memberships()).containsOnly(USER);
     }
 }

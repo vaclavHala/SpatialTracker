@@ -1,0 +1,62 @@
+<div class="row" ng-hide="loggedUser">
+    <div class="col-md-6">
+        <div class="panel panel-default">
+            <div class="panel-heading">Login</div>
+            <div class="panel-body">
+                <form ng-submit="login()" name="form" id="loginForm">
+                    <div class="alert alert-success" ng-show="loginSuccess">Login successful</div>
+                    <div class="alert alert-danger" ng-show="loginError">Invalid credentials</div>
+                    <div class="form-group">
+                        <label for="loginLogin" class="control-label">Login:</label>
+                        <input type="text" id="loginLogin" ng-model="loginData.login" class="form-control" required="required" />
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword" class="control-label">Email:</label>
+                        <input type="password" id="loginPassword" ng-model="loginData.pass" class="form-control" required="required" />
+                    </div>
+                    <div class="form-group">
+                        <input type="submit" class="btn btn-primary" value="Login" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="panel panel-default">
+            <div class="panel-heading">Registration</div>
+            <div class="panel-body">
+                <form ng-submit="register()" name="form" ng-controller="RegisterController" id="registrationForm">
+                    <div class="alert alert-success" ng-show="success">
+                        Registration was successful. You can now login.
+                    </div>
+                    <div class="alert alert-danger" ng-show="errors">
+                        These errors were found:
+                        <ul ng-repeat="error in errors">
+                            <li>{{ error }}</li>
+                        </ul>
+                    </div>
+                    <div class="form-group">
+                        <label for="login" class="control-label">Login:</label>
+                        <input type="text" id="login" ng-model="user.login" class="form-control" required="required" />
+                    </div>
+                    <div class="form-group">
+                        <label for="email" class="control-label">Email:</label>
+                        <input type="email" id="email" ng-model="user.mail" class="form-control" required="required" />
+                    </div>
+                    <div class="form-group">
+                        <label for="password" class="control-label">Password:</label>
+                        <input type="password" id="password" name="password" ng-model="user.password" class="form-control" required="required" />
+                    </div>
+                    <div class="form-group">
+                        <label for="passwordRepeat" class="control-label">Repeat password:</label>
+                        <input type="password" id="passwordRepeat" name="passwordRepeat" class="form-control" ng-model="user.passwordRepeat" required="required" />
+                    </div>
+                    <div class="form-group">
+                        <input type="submit" class="btn btn-primary" value="Register" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<h1 ng-show="loggedUser">Hello {{ loggedUser.login }}</h1>
