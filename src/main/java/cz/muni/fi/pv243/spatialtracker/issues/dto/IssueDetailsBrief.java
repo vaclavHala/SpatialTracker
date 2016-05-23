@@ -20,6 +20,9 @@ import lombok.ToString;
 @AllArgsConstructor
 public class IssueDetailsBrief {
 
+    @JsonProperty("id")
+    private long id;
+
     @JsonProperty("subject")
     private String subject;
 

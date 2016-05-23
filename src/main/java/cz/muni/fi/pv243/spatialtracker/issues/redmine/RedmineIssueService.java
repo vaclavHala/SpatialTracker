@@ -159,7 +159,8 @@ public class RedmineIssueService implements IssueService {
         return this.getAllIssuesFor(redmineQueryFilter).stream()
                    .map((RedmineIssueDetails redmineIssue) -> {
                        Coordinates coords = this.coordsMapper.readFrom(redmineIssue.customFields());
-                       return new IssueDetailsBrief(redmineIssue.subject(),
+                       return new IssueDetailsBrief(redmineIssue.id(),
+                                                    redmineIssue.subject(),
                                                     coords);
                    }).collect(toList());
     }

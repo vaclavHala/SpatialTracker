@@ -204,7 +204,7 @@ public class IssueResourceIT {
                          .filter(i -> i.priority().equals(CAN_HAVE) || i.priority().equals(SHOULD_HAVE) || i.priority().equals(MUST_HAVE))
                          .filter(i -> i.coords().latitude() >= 3 && i.coords().latitude() <= 6)
                          .filter(i -> i.coords().longitude() >= 4 && i.coords().longitude() <= 7)
-                         .map(i -> new IssueDetailsBrief(i.subject(), i.coords()))
+                         .map(i -> new IssueDetailsBrief(0, i.subject(), i.coords()))
                          .collect(toList());
 
         String filter = "[" +
@@ -219,7 +219,8 @@ public class IssueResourceIT {
                        .asString();
         List<IssueDetailsBrief> filteredIssues = this.json.readValue(respFind.getBody(), ISSUE_DETAILS_LIST_TOKEN);
 
-        assertThat(filteredIssues).containsOnlyElementsOf(expectedIssues);
+        assertThat(filteredIssues).usingElementComparatorOnFields("subject", "coords")
+                .containsOnlyElementsOf(expectedIssues);
     }
 
 }
