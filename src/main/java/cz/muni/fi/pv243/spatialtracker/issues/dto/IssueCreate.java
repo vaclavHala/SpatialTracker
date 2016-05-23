@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import cz.muni.fi.pv243.spatialtracker.issues.IssueCategory;
 import cz.muni.fi.pv243.spatialtracker.issues.IssuePriority;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import lombok.*;
 import static lombok.AccessLevel.PRIVATE;
 
@@ -14,21 +15,24 @@ import static lombok.AccessLevel.PRIVATE;
 @NoArgsConstructor(access = PRIVATE)
 public class IssueCreate {
 
-    @NotNull
+    @NotNull(message = "{issue.subject.empty}")
+    @Size(min = 5, max = 50, message = "{issue.subject.size}")
     @JsonProperty("subject")
     private String subject;
 
+    @Size(max = 1000, message = "{issue.description.size}")
     @JsonProperty("description")
     private String description;
 
-    @NotNull
+    @NotNull(message = "{issue.priority.empty}")
     @JsonProperty("priority")
     private IssuePriority priority;
 
-    @NotNull
+    @NotNull(message = "{issue.category.empty}")
     @JsonProperty("category")
     private IssueCategory category;
 
+    @NotNull(message = "{issue.coords.empty}")
     @JsonProperty("coords")
     private Coordinates coords;
 

@@ -1,6 +1,7 @@
 package cz.muni.fi.pv243.spatialtracker.issues.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.validation.constraints.NotNull;
 import lombok.*;
 import static lombok.AccessLevel.PRIVATE;
 
@@ -11,9 +12,11 @@ import static lombok.AccessLevel.PRIVATE;
 @NoArgsConstructor(access = PRIVATE)
 public class Coordinates {
 
+    @NotNull(message = "{coords.lat.empty}")
     @JsonProperty("lat")
     private double latitude;
 
+    @NotNull(message = "{coords.lon.empty}")
     @JsonProperty("lon")
     private double longitude;
 }
