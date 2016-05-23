@@ -6,12 +6,12 @@
 
     <defaultProtocol type="Servlet 3.0" />
 
-    <container qualifier="wf-remote" default="true"/>
+    <container qualifier="wf-with-red"/>
+    <container qualifier="wf-only"/>
 
     <extension qualifier="docker">
       <property name="serverUri">tcp://localhost:2375</property>
       <property name="clean">true</property>
-      <property name="autoStartContainers">redmine-aq</property>
       <property name="dockerContainers">
           postgres-aq:
             buildImage:
@@ -20,7 +20,7 @@
             await:
               strategy: polling
             env: []
-          redmine-aq:
+          wf-with-red:
             buildImage:
                 dockerfileLocation: src/main/environment/redmine
                 remove: true
