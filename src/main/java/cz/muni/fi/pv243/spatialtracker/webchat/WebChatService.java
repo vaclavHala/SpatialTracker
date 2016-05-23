@@ -3,6 +3,8 @@ package cz.muni.fi.pv243.spatialtracker.webchat;
 import java.util.Date;
 import java.util.List;
 
+import javax.annotation.security.RolesAllowed;
+import javax.ejb.Stateless;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
@@ -19,6 +21,8 @@ import cz.muni.fi.pv243.spatialtracker.webchat.model.WebChatMessage;
 import cz.muni.fi.pv243.spatialtracker.webchat.store.WebChatMessageStore;
 
 @Path("/messages/{room}")
+@RolesAllowed("USER")
+@Stateless
 public class WebChatService {
 
 	@Inject

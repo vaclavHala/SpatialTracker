@@ -38,9 +38,10 @@
 		<script>
 		        var restContext = document.location.pathname.replace(/[^/]*$/, '') + 'rest';
 
-		        function MessageController($scope, $resource) {
+		        function MessageController($scope, $http, $resource) {
 
-		            var roomName = 'testing';
+		            var roomName = 'testing';//TODO: set the required room name
+		            $http.defaults.headers.common['Authorization']= 'Basic bG9ibzpsb2Jv'; //TODO: set the actual auth data
 		            var Message = $resource(restContext + '/messages/' + roomName);
 
 		            $scope.messages = [];
