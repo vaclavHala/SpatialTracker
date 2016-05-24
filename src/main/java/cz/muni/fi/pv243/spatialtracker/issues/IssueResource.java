@@ -2,7 +2,6 @@ package cz.muni.fi.pv243.spatialtracker.issues;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import cz.muni.fi.pv243.spatialtracker.AuthenticationException;
 import cz.muni.fi.pv243.spatialtracker.MulticauseError;
 import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueCreate;
 import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueDetailsBrief;
@@ -53,7 +52,7 @@ public class IssueResource {
         if (auth == null) {
             log.info("Got details request for current user with invalid Auth header value: {}",
                      currentUserBasicAuth);
-            throw new AuthenticationException();
+            throw new MulticauseError(asList("Auth required"));
         }
 
         log.info("New issue report: {}", issue);
