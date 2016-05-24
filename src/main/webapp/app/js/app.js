@@ -26,9 +26,9 @@ spatialTrackerApp.config(['$routeProvider',
                 templateUrl: 'partials/register.html',
                 controller: 'RegisterController'
             })
-            .when('/projects', {
-                templateUrl: 'partials/projects.html',
-                controller: 'ProjectController'
+            .when('/issues', {
+                templateUrl: 'partials/issues.html',
+                controller: 'IssueController'
             })
             .when('/logout', {
                 templateUrl: 'partials/register.html',

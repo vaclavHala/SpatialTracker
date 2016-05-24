@@ -82,14 +82,14 @@ spatialTrackerControllers.controller('LogoutController', ['$scope', '$http',
     }
 ]);
 
-spatialTrackerControllers.controller('ProjectController', ['$scope', '$http',
-    function ($scope, $http) {
-        $scope.newProject = {};
-        $scope.createProject = function () {
+spatialTrackerControllers.controller('IssueController', ['$scope', '$http', 
+    function($scope, $http) {
+        $scope.newIssue = { coords: { lat: 49.1952, lon: 16.6079 } };
+        $scope.createIssue = function () {
             delete $scope.success;
             delete $scope.errors;
             
-            $http.post('rest/project', $scope.newProject)
+            $http.post('rest/issue', $scope.newIssue)
                 .success(function() {
                     $scope.success = true;
                 })
