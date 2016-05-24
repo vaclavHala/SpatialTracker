@@ -17,12 +17,18 @@ public class ConfigLoader {
     @Inject
     private Config config;
 
+    @Inject
+    private ObjectMapper json;
+
     @PostConstruct
     public void load() {
         try (InputStream redmineFile = this.getClass().getResourceAsStream("/redmine.json")) {
-            RedmineConfigJson redmine = new ObjectMapper().readValue(redmineFile, RedmineConfigJson.class);
+            RedmineConfigJson redmine = this.json.readValue(redmineFile, RedmineConfigJson.class);
             this.config.redmineApiKey(redmine.apiKey());
             this.config.redmineBaseUrl(redmine.baseUrl());
+            this.config.projectId(redmine.projectId());
+            this.config.trackerId(redmine.trackerId());
+            log.info("New Config: {}", this.config);
         } catch (IOException e) {
             log.error("Could not find config file for Redmine: /redmine.json");
             throw new IllegalStateException(e);

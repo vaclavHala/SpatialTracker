@@ -94,15 +94,17 @@ public class RedmineUserService implements UserService {
         if (redmineDetails == null) {
             return Optional.empty();
         }
-        return Optional.of(this.mapRedmineUser(redmineDetails).build());
+        return Optional.of(this.mapRedmineUser(redmineDetails));
     }
 
     @Override
     public UserDetails detailsCurrentUser(final String login, final String password) throws MulticauseError {
+        //this blows up with invalid credentials
         RedmineUserDetails redmineDetails = this.detailsRedmineCurrentUser(login, password);
-        List<RedmineGroup> redmineGroups = this.groupMemberships(redmineDetails.id());
-        List<UserGroup> groups = this.groupMapper.fromRedmine(redmineGroups);
-        return this.mapRedmineUser(redmineDetails).memberships(groups).build();
+        //redmine only allows group view for administrators
+        //we dont want all users to have admin access, so this is a workaround
+        RedmineUserDetails redmineDetailsWithGroups = this.detailsRedmineSomeUser(redmineDetails.id());
+        return this.mapRedmineUser(redmineDetailsWithGroups);
     }
 
     @Override
@@ -156,7 +158,7 @@ public class RedmineUserService implements UserService {
         }
     }
 
-    private RedmineUserDetails detailsRedmineSomeUser(final String login) {
+    public RedmineUserDetails detailsRedmineSomeUser(final String login) {
         WebTarget target = this.restClient.target(this.redmineUrl + "users.json")
                                           .queryParam("name", login)
                                           .queryParam("limit", 1);
@@ -165,18 +167,42 @@ public class RedmineUserService implements UserService {
                                 .header("X-Redmine-API-Key", this.redmineKey)
                                 .buildGet()
                                 .invoke())) {
-            RedmineUserDetailsSearchWrapper redmineUsers =
-                    redmineResponse.get().readEntity(RedmineUserDetailsSearchWrapper.class);
-            return this.extractUser(login, redmineUsers.matchedUsers());
+            if (redmineResponse.get().getStatus() == 200) {
+                RedmineUserDetailsSearchWrapper redmineUsers =
+                        redmineResponse.get().readEntity(RedmineUserDetailsSearchWrapper.class);
+                return this.extractUser(login, redmineUsers.matchedUsers());
+            } else {
+                throw new ServerError("bang");
+            }
         } catch (ProcessingException e) {
             throw new ServerError(e);
         }
     }
 
-    private RedmineUserDetails detailsRedmineCurrentUser(
+    public RedmineUserDetails detailsRedmineSomeUser(final long redmineUserId) {
+        WebTarget target = this.restClient.target(this.redmineUrl).path("users").path(redmineUserId + ".json")
+                                          .queryParam("include", "groups");
+        try (Closeable<Response> redmineResponse =
+                closeable(target.request(APPLICATION_JSON)
+                                .header("X-Redmine-API-Key", this.redmineKey)
+                                .buildGet()
+                                .invoke())) {
+            if (redmineResponse.get().getStatus() == 200) {
+                return redmineResponse.get()
+                                      .readEntity(RedmineUserDetailsCurrentWrapper.class)
+                                      .user();
+            } else {
+                throw new ServerError("bang");
+            }
+        } catch (ProcessingException e) {
+            throw new ServerError(e);
+        }
+    }
+
+    public RedmineUserDetails detailsRedmineCurrentUser(
             final String login,
             final String password) throws MulticauseError {
-        WebTarget target = this.restClient.target(this.redmineUrl + "users/current.json");
+        WebTarget target = this.restClient.target(this.redmineUrl).path("users/current.json");
         try (Closeable<Response> redmineResponse =
                 closeable(target.request(APPLICATION_JSON)
                                 .header(AUTHORIZATION, assembleBasicAuthHeader(login, password))
@@ -196,35 +222,6 @@ public class RedmineUserService implements UserService {
         }
     }
 
-    private List<RedmineGroup> groupMemberships(final long userId) throws MulticauseError {
-        //redmine only allows group view for administrators
-        //we dont want all users to have admin access, so this is a workaround
-        String groupsUrl = format("%susers/%d.json?include=groups",
-                                  this.redmineUrl, userId);
-        WebTarget target = this.restClient.target(groupsUrl);
-        try (Closeable<Response> redmineResponse =
-                closeable(target.request(APPLICATION_JSON)
-                                .header("X-Redmine-API-Key", this.redmineKey)
-                                .buildGet()
-                                .invoke())) {
-            if (redmineResponse.get().getStatus() == 200) {
-                RedmineUserDetails redmineDetails = redmineResponse.get()
-                                                                   .readEntity(RedmineUserDetailsCurrentWrapper.class)
-                                                                   .user();
-                log.debug("User #{} is in redmine groups {}", userId, redmineDetails.memberships());
-                return redmineDetails.memberships() == null ? emptyList() : redmineDetails.memberships();
-            } else {
-                List<String> errors = this.extractErrorReport(redmineResponse.get());
-                log.info("Failed obtain group memberships: {} - {}",
-                         redmineResponse.get().getStatus(), errors);
-                throw new MulticauseError(errors);
-            }
-        } catch (ProcessingException e) {
-            throw new ServerError(e);
-        }
-
-    }
-
     private RedmineUserDetails extractUser(final String login, final List<RedmineUserDetails> foundUsers) {
         for (RedmineUserDetails match : foundUsers) {
             if (match.login().equals(login)) {
@@ -234,13 +231,15 @@ public class RedmineUserService implements UserService {
         return null;
     }
 
-    private UserDetailsBuilder mapRedmineUser(final RedmineUserDetails redmineUser) {
+    private UserDetails mapRedmineUser(final RedmineUserDetails redmineUser) {
         return UserDetails.builder()
                           .login(redmineUser.login())
                           .firstname(redmineUser.firstname().equals(EMPTY) ? null : redmineUser.firstname())
                           .lastname(redmineUser.lastname().equals(EMPTY) ? null : redmineUser.lastname())
+                          .memberships(redmineUser.memberships() == null ? null : this.groupMapper.fromRedmine(redmineUser.memberships()))
                           .email(redmineUser.email())
-                          .icon(redmineUser.icon());
+                          .icon(redmineUser.icon())
+                          .build();
     }
 
     private List<String> extractErrorReport(final Response resp) {

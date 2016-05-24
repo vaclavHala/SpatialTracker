@@ -18,6 +18,8 @@ import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.LoginException;
+import javax.ws.rs.NotAuthorizedException;
+import javax.ws.rs.core.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.jboss.security.SimpleGroup;
 import org.jboss.security.SimplePrincipal;
@@ -26,19 +28,20 @@ import org.jboss.security.auth.spi.AbstractServerLoginModule;
 @Slf4j
 public class RedmineLoginModule extends AbstractServerLoginModule {
 
-    protected String username;
+    private String username;
     private List<String> roles;
 
     @Override
     public boolean login() throws LoginException {
-        UserService userService;
+        log.debug("Login attempt");
+        RedmineUserService userService;
         // CDI is not working since login modules are not managed beans
         // This is hack to get redmine users service
         try {
             InitialContext initialContext = new InitialContext();
             Object lookup = initialContext.lookup("java:comp/BeanManager");
             BeanManager beanManager = (BeanManager) lookup;
-            userService = ((Bean<UserService>) beanManager.getBeans("RedmineUserService").iterator().next()).create(beanManager.createCreationalContext(null));
+            userService = ((Bean<RedmineUserService>) beanManager.getBeans("RedmineUserService").iterator().next()).create(beanManager.createCreationalContext(null));
         } catch (NamingException ex) {
             log.error("Failed to get user service", ex);
 
@@ -62,18 +65,19 @@ public class RedmineLoginModule extends AbstractServerLoginModule {
 
             return false;
         }
-
+        log.debug("Got login <{}> and password, trying to authenticate with Redmine", this.username);
         try {
             UserDetails details = userService.detailsCurrentUser(username, password);
             if (details == null) {
                 log.warn("Login failed: no such user");
                 return false;
             }
+            log.debug("User <{}> is was authenticated succesfully", this.username);
             this.roles = details.memberships().stream().map(UserGroup::name).collect(toList());
             //this needs to be set to commit the login and load groups etc. (javadoc of login())
             this.loginOk = true;
             return true;
-        } catch (MulticauseError ex) {
+        } catch (Exception ex) {
             log.warn("Login failed", ex);
         }
 

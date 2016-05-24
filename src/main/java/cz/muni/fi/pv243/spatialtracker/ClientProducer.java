@@ -1,13 +1,14 @@
 package cz.muni.fi.pv243.spatialtracker;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Disposes;
 import javax.enterprise.inject.Produces;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.ext.Provider;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@ApplicationScoped
 public class ClientProducer {
 
     private final ClientBuilder builder =
