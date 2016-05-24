@@ -11,7 +11,8 @@ import cz.muni.fi.pv243.spatialtracker.webchat.model.WebChatMessage;
 
 public class WebChatMessageEncoder implements Encoder.Text<WebChatMessage> {
 
-	private static final SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss dd.MM.yyyy");
+	public static final String DATE_FORMAT_PATTERN = "HH:mm:ss dd.MM.yyyyZ";
+	private static final SimpleDateFormat formatter = new SimpleDateFormat(DATE_FORMAT_PATTERN);
 	@Override
 	public void destroy() {
 		
