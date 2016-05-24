@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public interface IssueService {
 
-    long report(IssueCreate newIssue, String login, String password) throws MulticauseError;
+    long report(IssueCreate newIssue, String login) throws MulticauseError;
 
     Optional<IssueDetailsFull> detailsFor(long issueId);
 

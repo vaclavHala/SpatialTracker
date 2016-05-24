@@ -44,7 +44,6 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
@@ -73,6 +72,9 @@ public class IssueResourceIT {
            .addPackages(false,
                         SpatialTracker.class.getPackage())
            .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
+           //to be able to log in we need these config bits
+           .addAsWebInfResource(new File("src/main/webapp/WEB-INF/web.xml"), "web.xml")
+           .addAsWebInfResource(new File("src/main/webapp/WEB-INF/jboss-web.xml"), "jboss-web.xml")
            //for tests redmine URL is shifted by 1 to not clash with concurrently running live redmine
            .addAsResource("redmine-test.json", "redmine.json");
         return war;
@@ -137,7 +139,7 @@ public class IssueResourceIT {
                        .header(ACCEPT, APPLICATION_JSON)
                        .body(this.json.writeValueAsString(newIssue))
                        .asString();
-        assertThat(respReport.getStatus()).isEqualTo(401);
+        assertThat(respReport.getStatus()).isEqualTo(403);
     }
 
     @Test
@@ -196,6 +198,13 @@ public class IssueResourceIT {
     public void shouldFilterIssuesUsingAllGivenFilters(
             final @ArquillianResource URL appUrl) throws Exception {
 
+        String login = "reporter";
+        String pass = "sneaky";
+        Unirest.post(appUrl + "rest/user/")
+               .header(CONTENT_TYPE, APPLICATION_JSON)
+               .body(this.json.writeValueAsString(new UserCreate(login, pass, "mail@me.now")))
+               .asString();
+
         List<IssueCreate> allIssues = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/testdata/issues_100.json")))) {
             String jsonIssue = null;
@@ -204,7 +213,7 @@ public class IssueResourceIT {
                 allIssues.add(issue);
                 HttpResponse<String> resp =
                         Unirest.post(appUrl + "rest/issue/")
-                               .basicAuth("admin", "admin")
+                               .basicAuth(login, pass)
                                .header(CONTENT_TYPE, APPLICATION_JSON)
                                .body(this.json.writeValueAsString(issue))
                                .asString();

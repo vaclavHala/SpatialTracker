@@ -7,20 +7,22 @@ import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueCreate;
 import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueDetailsBrief;
 import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueDetailsFull;
 import cz.muni.fi.pv243.spatialtracker.issues.filter.IssueFilter;
-import cz.muni.fi.pv243.spatialtracker.users.BasicAuthUtils.LoginPass;
-import static cz.muni.fi.pv243.spatialtracker.users.BasicAuthUtils.decodeBasicAuthLogin;
 import java.io.IOException;
 import java.net.URI;
 import static java.util.Arrays.asList;
 import java.util.List;
 import java.util.Optional;
+import javax.annotation.Resource;
+import javax.annotation.security.DeclareRoles;
+import javax.annotation.security.PermitAll;
+import javax.annotation.security.RolesAllowed;
+import javax.ejb.EJBContext;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
-import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
@@ -31,10 +33,15 @@ import lombok.extern.slf4j.Slf4j;
 @Consumes(APPLICATION_JSON)
 @Produces(APPLICATION_JSON)
 @Path("/issue")
+@DeclareRoles("USER")
+@RolesAllowed("USER")
 public class IssueResource {
 
     private static final TypeReference<List<IssueFilter>> ISSUE_FILTERS_LIST_TOKEN =
             new TypeReference<List<IssueFilter>>() {};
+
+    @Resource
+    private EJBContext ctx;
 
     @Inject
     private IssueService issueService;
@@ -45,18 +52,10 @@ public class IssueResource {
     @POST
     public Response createIssue(
             final @NotNull @Valid IssueCreate issue,
-            final @Context UriInfo userApiLocation,
-            final @HeaderParam(AUTHORIZATION) String currentUserBasicAuth) throws MulticauseError {
-
-        LoginPass auth = decodeBasicAuthLogin(currentUserBasicAuth);
-        if (auth == null) {
-            log.info("Got details request for current user with invalid Auth header value: {}",
-                     currentUserBasicAuth);
-            throw new MulticauseError(asList("Auth required"));
-        }
-
-        log.info("New issue report: {}", issue);
-        long newIssueResourceId = this.issueService.report(issue, auth.login(), auth.pass());
+            final @Context UriInfo userApiLocation) throws MulticauseError {
+        String user = this.ctx.getCallerPrincipal().getName();
+        log.info("New issue report from user {}: {}", user, issue);
+        long newIssueResourceId = this.issueService.report(issue, user);
         URI newIssueResourcePath = userApiLocation.getAbsolutePathBuilder()
                                                   .path(String.valueOf(newIssueResourceId)).build();
         return Response.created(newIssueResourcePath).build();
@@ -64,6 +63,7 @@ public class IssueResource {
 
     @GET
     @Path("/{id}")
+    @PermitAll
     public Response detailsFor(final @PathParam("id") long forId) {
         log.info("Request to display isue #{}", forId);
         Optional<IssueDetailsFull> issue = this.issueService.detailsFor(forId);
@@ -88,6 +88,7 @@ public class IssueResource {
      *                  The '?' and '=' must not be encoded, only the JSON body.
      */
     @GET
+    @PermitAll
     public Response searchFiltered(final @QueryParam("filter") String rawFilter) throws MulticauseError {
         List<IssueFilter> filters;
         try {

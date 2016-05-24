@@ -79,7 +79,7 @@ public class RedmineIssueService implements IssueService {
     private RedmineCoordinatesMapper coordsMapper;
 
     @Override
-    public long report(final IssueCreate newIssue, final String login, final String password) throws MulticauseError {
+    public long report(final IssueCreate newIssue, final String login) throws MulticauseError {
         log.info("New issue creation reguest: {}", newIssue);
         List<CustomField> customFields = new ArrayList<>();
         this.coordsMapper.appendTo(customFields, newIssue.coords());
@@ -92,10 +92,10 @@ public class RedmineIssueService implements IssueService {
                                        this.priorityMapper.toId(newIssue.priority()),
                                        customFields);
         WebTarget target = this.restClient.target(this.redmineUrl + "issues.json");
-        String auth = assembleBasicAuthHeader(login, password);
         try (Closeable<Response> redmineResponse =
                 closeable(target.request(APPLICATION_JSON)
-                                .header(AUTHORIZATION, auth)
+                                .header("X-Redmine-Switch-User", login)
+                                .header("X-Redmine-API-Key", this.redmineKey)
                                 .buildPost(json(redmineNewIssue))
                                 .invoke())) {
             if (redmineResponse.get().getStatus() == 201) {
