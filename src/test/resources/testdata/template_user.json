@@ -1,0 +1,5 @@
+{
+  "login" : "{{lorem(1, 'words')}}",
+  "password" : "{{lorem(1, 'words')}}",
+  "email": "{{firstName()}}@{{surname()}}.{{random('cz','sk','com','org')}}"
+}

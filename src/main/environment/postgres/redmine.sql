@@ -35,12 +35,6 @@ SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET row_security = off;
 
---
--- Name: public; Type: SCHEMA; Schema: -; Owner: postgres
---
-
-
-
 ALTER SCHEMA public OWNER TO postgres;
 
 --
@@ -51,14 +45,14 @@ COMMENT ON SCHEMA public IS 'standard public schema';
 
 
 --
--- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: 
+-- Name: plpgsql; Type: EXTENSION; Schema: -; Owner:
 --
 
 CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
 
 
 --
--- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: 
+-- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner:
 --
 
 COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
@@ -2384,20 +2378,16 @@ SELECT pg_catalog.setval('custom_field_enumerations_id_seq', 1, false);
 -- Data for Name: custom_fields; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-INSERT INTO custom_fields (id, type, name, field_format, possible_values, regexp, min_length, max_length, is_required, is_for_all, is_filter, "position", searchable, default_value, editable, visible, multiple, format_store, description) VALUES (2, 'IssueCustomField', 'lat', 'float', NULL, '', NULL, NULL, true, false, false, 1, false, '', true, true, false, '--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess
+INSERT INTO custom_fields (id, type, name, field_format, possible_values, regexp, min_length, max_length, is_required, is_for_all, is_filter, "position", searchable, default_value, editable, visible, multiple, format_store, description) VALUES (2, 'IssueCustomField', 'lat', 'float', NULL, '', NULL, NULL, true, false, true, 1, false, '', true, true, false, '--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess
 url_pattern: ''''
 ', 'latitude
 -90 (south) .. 90 (north)');
-INSERT INTO custom_fields (id, type, name, field_format, possible_values, regexp, min_length, max_length, is_required, is_for_all, is_filter, "position", searchable, default_value, editable, visible, multiple, format_store, description) VALUES (3, 'IssueCustomField', 'lon', 'float', NULL, '', NULL, NULL, true, false, false, 2, false, '', true, true, false, '--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess
+INSERT INTO custom_fields (id, type, name, field_format, possible_values, regexp, min_length, max_length, is_required, is_for_all, is_filter, "position", searchable, default_value, editable, visible, multiple, format_store, description) VALUES (3, 'IssueCustomField', 'lon', 'float', NULL, '', NULL, NULL, true, false, true, 2, false, '', true, true, false, '--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess
 url_pattern: ''''
 ', 'longitude
 -180 (west) .. 180 (east)');
 INSERT INTO custom_fields (id, type, name, field_format, possible_values, regexp, min_length, max_length, is_required, is_for_all, is_filter, "position", searchable, default_value, editable, visible, multiple, format_store, description) VALUES (4, 'UserCustomField', 'icon', 'text', NULL, '', NULL, NULL, false, false, false, 1, false, '', true, true, false, '--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess
 text_formatting: ''''
-', '');
-INSERT INTO custom_fields (id, type, name, field_format, possible_values, regexp, min_length, max_length, is_required, is_for_all, is_filter, "position", searchable, default_value, editable, visible, multiple, format_store, description) VALUES (5, 'IssueCustomField', 'img', 'string', NULL, '', NULL, NULL, false, true, false, 3, false, '', true, true, false, '--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess
-text_formatting: ''''
-url_pattern: ''''
 ', '');
 
 
@@ -2428,7 +2418,6 @@ INSERT INTO custom_fields_projects (custom_field_id, project_id) VALUES (3, 4);
 
 INSERT INTO custom_fields_trackers (custom_field_id, tracker_id) VALUES (2, 1);
 INSERT INTO custom_fields_trackers (custom_field_id, tracker_id) VALUES (3, 1);
-INSERT INTO custom_fields_trackers (custom_field_id, tracker_id) VALUES (5, 1);
 
 
 --
@@ -2441,7 +2430,7 @@ INSERT INTO custom_fields_trackers (custom_field_id, tracker_id) VALUES (5, 1);
 -- Name: custom_values_id_seq; Type: SEQUENCE SET; Schema: public; Owner: redmine
 --
 
-SELECT pg_catalog.setval('custom_values_id_seq', 17, true);
+SELECT pg_catalog.setval('custom_values_id_seq', 30, true);
 
 
 --
@@ -2468,7 +2457,7 @@ INSERT INTO email_addresses (id, user_id, address, is_default, notify, created_o
 -- Name: email_addresses_id_seq; Type: SEQUENCE SET; Schema: public; Owner: redmine
 --
 
-SELECT pg_catalog.setval('email_addresses_id_seq', 14, true);
+SELECT pg_catalog.setval('email_addresses_id_seq', 16, true);
 
 
 --
@@ -2538,14 +2527,17 @@ SELECT pg_catalog.setval('imports_id_seq', 1, false);
 -- Data for Name: issue_categories; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-INSERT INTO issue_categories (id, project_id, name, assigned_to_id) VALUES (1, 4, 'test', NULL);
+INSERT INTO issue_categories (id, project_id, name, assigned_to_id) VALUES (2, 4, 'add', NULL);
+INSERT INTO issue_categories (id, project_id, name, assigned_to_id) VALUES (5, 4, 'complaint', NULL);
+INSERT INTO issue_categories (id, project_id, name, assigned_to_id) VALUES (3, 4, 'remove', NULL);
+INSERT INTO issue_categories (id, project_id, name, assigned_to_id) VALUES (4, 4, 'repair', NULL);
 
 
 --
 -- Name: issue_categories_id_seq; Type: SEQUENCE SET; Schema: public; Owner: redmine
 --
 
-SELECT pg_catalog.setval('issue_categories_id_seq', 1, true);
+SELECT pg_catalog.setval('issue_categories_id_seq', 5, true);
 
 
 --
@@ -2565,11 +2557,10 @@ SELECT pg_catalog.setval('issue_relations_id_seq', 1, false);
 -- Data for Name: issue_statuses; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-INSERT INTO issue_statuses (id, name, is_closed, "position", default_done_ratio) VALUES (1, 'awesome', false, 1, NULL);
-INSERT INTO issue_statuses (id, name, is_closed, "position", default_done_ratio) VALUES (2, 'Reported', false, 2, NULL);
-INSERT INTO issue_statuses (id, name, is_closed, "position", default_done_ratio) VALUES (3, 'Accepted', false, 3, NULL);
-INSERT INTO issue_statuses (id, name, is_closed, "position", default_done_ratio) VALUES (4, 'Rejected', true, 4, NULL);
-INSERT INTO issue_statuses (id, name, is_closed, "position", default_done_ratio) VALUES (5, 'Fixed', true, 5, NULL);
+INSERT INTO issue_statuses (id, name, is_closed, "position", default_done_ratio) VALUES (2, 'Reported', false, 1, NULL);
+INSERT INTO issue_statuses (id, name, is_closed, "position", default_done_ratio) VALUES (3, 'Accepted', false, 2, NULL);
+INSERT INTO issue_statuses (id, name, is_closed, "position", default_done_ratio) VALUES (4, 'Rejected', true, 3, NULL);
+INSERT INTO issue_statuses (id, name, is_closed, "position", default_done_ratio) VALUES (5, 'Fixed', true, 4, NULL);
 
 
 --
@@ -2589,7 +2580,7 @@ SELECT pg_catalog.setval('issue_statuses_id_seq', 5, true);
 -- Name: issues_id_seq; Type: SEQUENCE SET; Schema: public; Owner: redmine
 --
 
-SELECT pg_catalog.setval('issues_id_seq', 2, true);
+SELECT pg_catalog.setval('issues_id_seq', 1, true);
 
 
 --
@@ -2623,13 +2614,16 @@ SELECT pg_catalog.setval('journals_id_seq', 2, true);
 --
 
 INSERT INTO member_roles (id, member_id, role_id, inherited_from) VALUES (1, 1, 3, NULL);
+INSERT INTO member_roles (id, member_id, role_id, inherited_from) VALUES (2, 2, 5, NULL);
+INSERT INTO member_roles (id, member_id, role_id, inherited_from) VALUES (5, 5, 6, NULL);
+INSERT INTO member_roles (id, member_id, role_id, inherited_from) VALUES (6, 2, 6, NULL);
 
 
 --
 -- Name: member_roles_id_seq; Type: SEQUENCE SET; Schema: public; Owner: redmine
 --
 
-SELECT pg_catalog.setval('member_roles_id_seq', 1, true);
+SELECT pg_catalog.setval('member_roles_id_seq', 7, true);
 
 
 --
@@ -2637,13 +2631,15 @@ SELECT pg_catalog.setval('member_roles_id_seq', 1, true);
 --
 
 INSERT INTO members (id, user_id, project_id, created_on, mail_notification) VALUES (1, 1, 4, '2016-04-27 00:37:27.462984', false);
+INSERT INTO members (id, user_id, project_id, created_on, mail_notification) VALUES (2, 6, 4, '2016-05-21 18:34:30.523267', false);
+INSERT INTO members (id, user_id, project_id, created_on, mail_notification) VALUES (5, 2, 4, '2016-05-21 21:23:46.061361', false);
 
 
 --
 -- Name: members_id_seq; Type: SEQUENCE SET; Schema: public; Owner: redmine
 --
 
-SELECT pg_catalog.setval('members_id_seq', 1, true);
+SELECT pg_catalog.setval('members_id_seq', 5, true);
 
 
 --
@@ -2826,13 +2822,23 @@ INSERT INTO roles (id, name, "position", assignable, builtin, permissions, issue
 - :delete_wiki_pages_attachments
 - :protect_wiki_pages
 ', 'all', 'all', 'all', true);
+INSERT INTO roles (id, name, "position", assignable, builtin, permissions, issues_visibility, users_visibility, time_entries_visibility, all_roles_managed) VALUES (5, 'role_issues_write', 4, true, 0, '---
+- :manage_categories
+- :view_issues
+- :add_issues
+- :edit_issues
+- :delete_issues
+', 'default', 'all', 'all', true);
+INSERT INTO roles (id, name, "position", assignable, builtin, permissions, issues_visibility, users_visibility, time_entries_visibility, all_roles_managed) VALUES (6, 'role_issues_read', 5, true, 0, '---
+- :view_issues
+', 'default', 'all', 'all', true);
 
 
 --
 -- Name: roles_id_seq; Type: SEQUENCE SET; Schema: public; Owner: redmine
 --
 
-SELECT pg_catalog.setval('roles_id_seq', 4, true);
+SELECT pg_catalog.setval('roles_id_seq', 6, true);
 
 
 --
@@ -3155,9 +3161,9 @@ INSERT INTO settings (id, name, value, updated_on) VALUES (36, 'default_projects
 INSERT INTO settings (id, name, value, updated_on) VALUES (37, 'default_projects_tracker_ids', '--- []
 ', '2016-05-11 09:38:26.059162');
 INSERT INTO settings (id, name, value, updated_on) VALUES (38, 'sequential_project_identifiers', '0', '2016-05-11 09:38:26.065162');
-INSERT INTO settings (id, name, value, updated_on) VALUES (23, 'login_required', '1', '2016-05-11 12:22:52.277326');
 INSERT INTO settings (id, name, value, updated_on) VALUES (25, 'self_registration', '3', '2016-05-11 12:22:52.284274');
 INSERT INTO settings (id, name, value, updated_on) VALUES (34, 'default_users_hide_mail', '0', '2016-05-11 16:11:55.476903');
+INSERT INTO settings (id, name, value, updated_on) VALUES (23, 'login_required', '0', '2016-05-21 21:34:25.64256');
 
 
 --
@@ -3193,20 +3199,21 @@ INSERT INTO tokens (id, user_id, action, value, created_on, updated_on) VALUES (
 INSERT INTO tokens (id, user_id, action, value, created_on, updated_on) VALUES (26, 1, 'session', 'c950cfbd76597f0445c882a27ffef27873e49660', '2016-05-18 05:27:46.646671', '2016-05-18 05:38:48.870217');
 INSERT INTO tokens (id, user_id, action, value, created_on, updated_on) VALUES (6, 1, 'session', '7b65e690305b053d7d61ab129b52fed0413a3aa3', '2016-04-27 19:37:24.845145', '2016-04-27 19:46:57.708756');
 INSERT INTO tokens (id, user_id, action, value, created_on, updated_on) VALUES (7, 1, 'session', '21e48d04509493c19e43f4b8b3dd72ff9bba8eaf', '2016-05-02 15:55:57.207219', '2016-05-02 15:57:58.341');
+INSERT INTO tokens (id, user_id, action, value, created_on, updated_on) VALUES (30, 1, 'session', '9c553565085035c7813110f94ee25bae9eb4eaf6', '2016-05-21 21:33:10.786096', '2016-05-21 22:35:08.471718');
 
 
 --
 -- Name: tokens_id_seq; Type: SEQUENCE SET; Schema: public; Owner: redmine
 --
 
-SELECT pg_catalog.setval('tokens_id_seq', 26, true);
+SELECT pg_catalog.setval('tokens_id_seq', 30, true);
 
 
 --
 -- Data for Name: trackers; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
-INSERT INTO trackers (id, name, is_in_chlog, "position", is_in_roadmap, fields_bits, default_status_id) VALUES (1, 'SpatialTracker', false, 1, true, 239, 2);
+INSERT INTO trackers (id, name, is_in_chlog, "position", is_in_roadmap, fields_bits, default_status_id) VALUES (1, 'SpatialTracker', false, 1, true, 237, 2);
 
 
 --
@@ -3228,7 +3235,7 @@ INSERT INTO user_preferences (id, user_id, others, hide_mail, time_zone) VALUES 
 -- Name: user_preferences_id_seq; Type: SEQUENCE SET; Schema: public; Owner: redmine
 --
 
-SELECT pg_catalog.setval('user_preferences_id_seq', 7, true);
+SELECT pg_catalog.setval('user_preferences_id_seq', 9, true);
 
 
 --
@@ -3248,7 +3255,7 @@ INSERT INTO users (id, login, hashed_password, firstname, lastname, admin, statu
 -- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: redmine
 --
 
-SELECT pg_catalog.setval('users_id_seq', 20, true);
+SELECT pg_catalog.setval('users_id_seq', 22, true);
 
 
 --

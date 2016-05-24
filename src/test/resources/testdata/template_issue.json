@@ -1,0 +1,10 @@
+{
+  "subject" : function (tags, parent) {return tags.lorem(1,'sentences').substring(0,40);},
+  "description" : "{{lorem(2)}}",
+  "priority" : "{{random('MUST_HAVE', 'SHOULD_HAVE', 'CAN_HAVE', 'WANT_TO_HAVE')}}",
+  "category" : "{{random('ADD','REMOVE','REPAIR','COMPLAINT')}}",
+  "coords" : {
+    "lon" : "{{floating(-10,-5)}}",
+    "lat" : "{{floating()}}"
+  }
+}
