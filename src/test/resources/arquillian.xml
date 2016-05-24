@@ -33,6 +33,10 @@
                 strategy: polling
                 sleepPollingTime: 1 s
                 iterations: 20
+            beforeStop:
+                - copy:
+                    from: /usr/src/redmine/log/production.log
+                    to: target/redmine.log
       </property>
   </extension>
 </arquillian>
