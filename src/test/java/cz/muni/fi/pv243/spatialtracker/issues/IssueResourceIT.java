@@ -17,7 +17,6 @@ import cz.muni.fi.pv243.spatialtracker.issues.dto.Coordinates;
 import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueCreate;
 import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueDetailsBrief;
 import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueDetailsFull;
-import cz.muni.fi.pv243.spatialtracker.issues.filter.IssueFilter;
 import static cz.muni.fi.pv243.spatialtracker.users.BasicAuthUtils.assembleBasicAuthHeader;
 import cz.muni.fi.pv243.spatialtracker.users.UserResource;
 import cz.muni.fi.pv243.spatialtracker.users.dto.UserCreate;
@@ -45,6 +44,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.After;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
@@ -124,6 +124,20 @@ public class IssueResourceIT {
                        .body(this.json.writeValueAsString(newIssue))
                        .asString();
         assertThat(respReport.getStatus()).isEqualTo(201);
+    }
+
+    @Test
+    public void shouldNotAllowAnnonymousUserToReportIssue(
+            final @ArquillianResource URL appUrl) throws Exception {
+        String issueApiUrl = appUrl + "rest/issue/";
+        IssueCreate newIssue = new IssueCreate("Stuffs' broke", null, MUST_HAVE, REPAIR, new Coordinates(12.3, 4.56));
+        HttpResponse<String> respReport =
+                Unirest.post(issueApiUrl)
+                       .header(CONTENT_TYPE, APPLICATION_JSON)
+                       .header(ACCEPT, APPLICATION_JSON)
+                       .body(this.json.writeValueAsString(newIssue))
+                       .asString();
+        assertThat(respReport.getStatus()).isEqualTo(401);
     }
 
     @Test
@@ -220,7 +234,7 @@ public class IssueResourceIT {
         List<IssueDetailsBrief> filteredIssues = this.json.readValue(respFind.getBody(), ISSUE_DETAILS_LIST_TOKEN);
 
         assertThat(filteredIssues).usingElementComparatorOnFields("subject", "coords")
-                .containsOnlyElementsOf(expectedIssues);
+                                  .containsOnlyElementsOf(expectedIssues);
     }
 
 }

@@ -45,8 +45,12 @@ public class RedmineFilterComposer {
     }
 
     public String assembleFilters(final Collection<IssueFilter> filters) {
+        Set<Class<? extends IssueFilter>> usedFilters = new HashSet<>();
         List<String> queryFragments = new ArrayList<>();
         for (IssueFilter filter : filters) {
+            if(!usedFilters.add(filter.getClass())){
+                throw new IllegalArgumentException("Filter of type "+filter.getClass()+" declared multiple times");
+            }
             RedmineFilterMapper<IssueFilter> translator = this.filterTranslators.get(filter.getClass());
             if (translator == null) {
                 throw new IllegalStateException("Mapper for type " + filter.getClass() + " was not registered");
