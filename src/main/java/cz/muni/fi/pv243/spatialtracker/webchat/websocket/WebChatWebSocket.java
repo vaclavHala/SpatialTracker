@@ -11,7 +11,7 @@ import javax.websocket.Session;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 
-import cz.muni.fi.pv243.spatialtracker.webchat.model.NewWebChatMessage;
+import cz.muni.fi.pv243.spatialtracker.webchat.model.NewWebChatMessageEvent;
 import cz.muni.fi.pv243.spatialtracker.webchat.store.KeySessionStore;
 
 @ServerEndpoint(value = "/socket/messages/{room}", encoders = { WebChatMessageEncoder.class })
@@ -32,14 +32,14 @@ public class WebChatWebSocket {
 		sessions.removeSession(roomName, session);
 	}
 
-	public void updateClients(@Observes NewWebChatMessage newMessage) {
-		String roomName = newMessage.getRoomName();
+	public void updateClients(@Observes NewWebChatMessageEvent newMessage) {
+		String roomName = newMessage.roomName();
 		if (roomName == null) {
 			throw new NullPointerException("roomName");
 		}
 		sessions.getSessions(roomName).stream().filter(session -> session.isOpen()).forEach(session -> {
 			try {
-				session.getBasicRemote().sendObject(newMessage.getMessage());
+				session.getBasicRemote().sendObject(newMessage.message());
 			} catch (Exception e) {
 				log.log(Level.WARNING, e.getMessage(), e);
 			}

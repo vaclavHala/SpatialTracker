@@ -2,6 +2,7 @@ package cz.muni.fi.pv243.spatialtracker.webchat.store;
 
 import static org.junit.Assert.*;
 
+import java.util.Date;
 import java.util.List;
 
 import org.junit.Test;
@@ -48,8 +49,8 @@ public class WebChatMessageStoreTest {
 	private final String sampleText2 = "second message";
 
 	private void addSampleKeyMessages(WebChatMessageStore store) {
-		store.addMessage(sampleKey, new WebChatMessage(sampleName1, sampleText1));
-		store.addMessage(sampleKey, new WebChatMessage(sampleName2, sampleText2));
+		store.addMessage(sampleKey, new WebChatMessage(sampleName1, sampleText1, new Date()));
+		store.addMessage(sampleKey, new WebChatMessage(sampleName2, sampleText2, new Date()));
 	}
 
 	private void assertSampleKeyMessages(WebChatMessageStore store) {
@@ -58,12 +59,12 @@ public class WebChatMessageStoreTest {
 		assertEquals(msgs.size(), 2);
 
 		WebChatMessage msg = msgs.get(0);
-		assertEquals(msg.getName(), sampleName1);
-		assertEquals(msg.getText(), sampleText1);
+		assertEquals(msg.name(), sampleName1);
+		assertEquals(msg.text(), sampleText1);
 
 		msg = msgs.get(1);
-		assertEquals(msg.getName(), sampleName2);
-		assertEquals(msg.getText(), sampleText2);
+		assertEquals(msg.name(), sampleName2);
+		assertEquals(msg.text(), sampleText2);
 	}
 
 	private final String differentKey = "different key";
@@ -72,7 +73,7 @@ public class WebChatMessageStoreTest {
 	private final String differentText = "different text";
 
 	private void addDifferentKeyMessages(WebChatMessageStore store) {
-		store.addMessage(differentKey, new WebChatMessage(differentName, differentText));
+		store.addMessage(differentKey, new WebChatMessage(differentName, differentText, new Date()));
 	}
 
 	private void assertDifferentKeyMessages(WebChatMessageStore store) {
@@ -81,7 +82,7 @@ public class WebChatMessageStoreTest {
 		assertEquals(msgs.size(), 1);
 
 		WebChatMessage msg = msgs.get(0);
-		assertEquals(msg.getName(), differentName);
-		assertEquals(msg.getText(), differentText);
+		assertEquals(msg.name(), differentName);
+		assertEquals(msg.text(), differentText);
 	}
 }

@@ -1,5 +1,7 @@
 package cz.muni.fi.pv243.spatialtracker.webchat.websocket;
 
+import java.text.SimpleDateFormat;
+
 import javax.json.Json;
 import javax.websocket.EncodeException;
 import javax.websocket.Encoder;
@@ -9,6 +11,8 @@ import cz.muni.fi.pv243.spatialtracker.webchat.model.WebChatMessage;
 
 public class WebChatMessageEncoder implements Encoder.Text<WebChatMessage> {
 
+	public static final String DATE_FORMAT_PATTERN = "HH:mm:ss dd.MM.yyyyZ";
+	private static final SimpleDateFormat formatter = new SimpleDateFormat(DATE_FORMAT_PATTERN);
 	@Override
 	public void destroy() {
 		
@@ -22,8 +26,9 @@ public class WebChatMessageEncoder implements Encoder.Text<WebChatMessage> {
 	@Override
 	public String encode(WebChatMessage arg) throws EncodeException {
 		return Json.createObjectBuilder()
-				.add("name", arg.getName())
-				.add("text", arg.getText())
+				.add("name", arg.name())
+				.add("text", arg.text())
+				.add("created", formatter.format(arg.created()))
 				.build().toString();
 	}
 

@@ -1,16 +1,15 @@
 package cz.muni.fi.pv243.spatialtracker.webchat.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
 @Getter
 @Setter
+@AllArgsConstructor
 @ToString
-public class NewWebChatMessage {
-
-	@JsonProperty("text")
-	private String text;
+public class NewWebChatMessageEvent {
+	private String roomName;
+	private WebChatMessage message;
 }
