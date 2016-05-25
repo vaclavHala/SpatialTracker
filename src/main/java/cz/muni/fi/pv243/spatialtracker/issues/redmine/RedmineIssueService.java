@@ -20,6 +20,7 @@ import cz.muni.fi.pv243.spatialtracker.issues.redmine.dto.*;
 import cz.muni.fi.pv243.spatialtracker.issues.redmine.filter.RedmineFilterComposer;
 import static cz.muni.fi.pv243.spatialtracker.users.BasicAuthUtils.assembleBasicAuthHeader;
 import cz.muni.fi.pv243.spatialtracker.users.redmine.RedmineUserService;
+import cz.muni.fi.pv243.spatialtracker.users.redmine.dto.RedmineUserDetails;
 import static java.lang.String.format;
 import java.util.ArrayList;
 import static java.util.Collections.emptyList;
@@ -126,20 +127,19 @@ public class RedmineIssueService implements IssueService {
             if (redmineResponse.get().getStatus() == 200) {
                 log.info("Issue #{} was found in Redmine", issueId);
 
-                RedmineIssueDetails redmineDetails =
+                RedmineIssueDetails redmineIssueDetails =
                         redmineResponse.get().readEntity(RedmineIssueDetailsSingleWrapper.class).issue();
-                log.debug("Issue #{}: {}", issueId, redmineDetails);
-                //this.userService.
-                //TODO redmine user service needs to expose operations with user by redmine id
-                //visible only for RedmineUserService, not generic UserService
-                return Optional.of(new IssueDetailsFull(redmineDetails.subject(),
-                                                        redmineDetails.description(),
-                                                        this.statusMapper.fromId(redmineDetails.status().id()),
-                                                        this.priorityMapper.fromId(redmineDetails.priority().id()),
-                                                        this.categoryMapper.fromId(redmineDetails.category().id()),
-                                                        redmineDetails.startedDate(),
-                                                        "fantomas",//redmineDetails.author().
-                                                        this.coordsMapper.readFrom(redmineDetails.customFields())));
+                RedmineUserDetails redmineUserdetails =
+                        this.userService.detailsRedmineSomeUser(redmineIssueDetails.author().id());
+                log.debug("Issue #{}: {}", issueId, redmineIssueDetails);
+                return Optional.of(new IssueDetailsFull(redmineIssueDetails.subject(),
+                                                        redmineIssueDetails.description(),
+                                                        this.statusMapper.fromId(redmineIssueDetails.status().id()),
+                                                        this.priorityMapper.fromId(redmineIssueDetails.priority().id()),
+                                                        this.categoryMapper.fromId(redmineIssueDetails.category().id()),
+                                                        redmineIssueDetails.startedDate(),
+                                                        redmineUserdetails.login(),
+                                                        this.coordsMapper.readFrom(redmineIssueDetails.customFields())));
             } else {
                 //                List<String> errors = this.extractErrorReport(redmineResponse.get());
                 List<String> errors = emptyList();
