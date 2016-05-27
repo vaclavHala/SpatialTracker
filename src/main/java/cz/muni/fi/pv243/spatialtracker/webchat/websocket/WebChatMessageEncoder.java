@@ -1,6 +1,7 @@
 package cz.muni.fi.pv243.spatialtracker.webchat.websocket;
 
 import java.text.SimpleDateFormat;
+import java.util.TimeZone;
 
 import javax.json.Json;
 import javax.websocket.EncodeException;
@@ -12,7 +13,13 @@ import cz.muni.fi.pv243.spatialtracker.webchat.model.WebChatMessage;
 public class WebChatMessageEncoder implements Encoder.Text<WebChatMessage> {
 
 	public static final String DATE_FORMAT_PATTERN = "HH:mm:ss dd.MM.yyyyZ";
+	public static final String TIME_ZONE = "Europe/Prague";
+
 	private static final SimpleDateFormat formatter = new SimpleDateFormat(DATE_FORMAT_PATTERN);
+	static {
+		formatter.setTimeZone(TimeZone.getTimeZone(TIME_ZONE));
+	}
+
 	@Override
 	public void destroy() {
 		

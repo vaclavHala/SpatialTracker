@@ -1,8 +1,5 @@
 package cz.muni.fi.pv243.spatialtracker.webchat.websocket;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import javax.websocket.OnClose;
@@ -13,11 +10,11 @@ import javax.websocket.server.ServerEndpoint;
 
 import cz.muni.fi.pv243.spatialtracker.webchat.model.NewWebChatMessageEvent;
 import cz.muni.fi.pv243.spatialtracker.webchat.store.KeySessionStore;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @ServerEndpoint(value = "/socket/messages/{room}", encoders = { WebChatMessageEncoder.class })
 public class WebChatWebSocket {
-
-	private Logger log = Logger.getLogger(WebChatWebSocket.class.getName());
 
 	@Inject
 	private KeySessionStore sessions;
@@ -41,7 +38,7 @@ public class WebChatWebSocket {
 			try {
 				session.getBasicRemote().sendObject(newMessage.message());
 			} catch (Exception e) {
-				log.log(Level.WARNING, e.getMessage(), e);
+				log.warn(e.getMessage(), e);
 			}
 		});
 	}

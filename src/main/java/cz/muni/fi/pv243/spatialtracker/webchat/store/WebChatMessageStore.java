@@ -1,38 +1,48 @@
 package cz.muni.fi.pv243.spatialtracker.webchat.store;
 
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
 import cz.muni.fi.pv243.spatialtracker.webchat.model.WebChatMessage;
+import org.infinispan.commons.api.BasicCache;
 
 @ApplicationScoped
 public class WebChatMessageStore {
-	private Map<String, List<WebChatMessage>> keyToMessage = new HashMap<>();
+
+	@Inject
+	private CacheContainerProvider cacheProvider;
+
+	private static final String MESSAGES_CACHE_NAME = "messages";
 
 	public void addMessage(String key, WebChatMessage message) {
-		List<WebChatMessage> sessions;
+		BasicCache<String, Object> messagesCache = getMessagesCache();
+		List<WebChatMessage> messages;
 		synchronized (this) {
-			sessions = keyToMessage.get(key);
-			if (sessions == null) {
-				sessions = new LinkedList<WebChatMessage>();
-				keyToMessage.put(key, sessions);
+			messages = (List<WebChatMessage>) messagesCache.get(key);
+			if (messages == null) {
+				messages = new LinkedList<>();
+				messagesCache.put(key, messages);
 			}
-			sessions.add(message);
+			messages.add(message);
 		}
 	}
 
 	public List<WebChatMessage> getMessages(String key) {
-		List<WebChatMessage> msgs;
+		BasicCache<String, Object> messagesCache = getMessagesCache();
+		List<WebChatMessage> messages;
 		synchronized (this) {
-			msgs = keyToMessage.get(key);
+			messages = (List<WebChatMessage>) messagesCache.get(key);
 		}
-		if (msgs == null) {
-			return new LinkedList<WebChatMessage>();
+		if (messages == null) {
+			return new LinkedList<>();
 		}
-		return msgs;
+		return messages;
+	}
+
+	private BasicCache<String, Object> getMessagesCache() {
+		return cacheProvider.getCacheContainer().getCache(MESSAGES_CACHE_NAME);
 	}
 }
