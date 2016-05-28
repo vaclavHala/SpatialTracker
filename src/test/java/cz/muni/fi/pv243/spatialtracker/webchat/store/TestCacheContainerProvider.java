@@ -15,7 +15,6 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Named;
 
 @ApplicationScoped
-@Named
 public class TestCacheContainerProvider implements CacheContainerProvider {
 
     private BasicCacheContainer manager;
@@ -23,12 +22,10 @@ public class TestCacheContainerProvider implements CacheContainerProvider {
     public BasicCacheContainer getCacheContainer() {
         if (manager == null) {
             GlobalConfiguration glob = new GlobalConfigurationBuilder()
-                    .nonClusteredDefault().globalJmxStatistics().enable()
-                    .jmxDomain("org.infinispan.carmart")  // prevent collision with non-transactional carmart
                     .build();
 
             Configuration defaultConfig = new ConfigurationBuilder()
-                    .transaction().transactionMode(TransactionMode.TRANSACTIONAL)
+                    .clustering().cacheMode(CacheMode.LOCAL)
                     .build();
             manager = new DefaultCacheManager(glob, defaultConfig);
             manager.start();
