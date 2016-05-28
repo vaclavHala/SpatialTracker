@@ -26,7 +26,7 @@ public class HeatMapService {
 
     public HeatMapService() throws IOException {
         cacheManager = new DefaultCacheManager("infinispan.xml");
-        cache = cacheManager.getCache();
+        cache = cacheManager.getCache("firsta");
     }
 
     public void addIssuesIntoCache(){

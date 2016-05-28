@@ -25,6 +25,6 @@ public class WebChatMessage {
 	private String text;
 
 	@JsonProperty("created")
-	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern= WebChatMessageEncoder.DATE_FORMAT_PATTERN)
+	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern=WebChatMessageEncoder.DATE_FORMAT_PATTERN, timezone=WebChatMessageEncoder.TIME_ZONE)
 	private Date created;
 }
