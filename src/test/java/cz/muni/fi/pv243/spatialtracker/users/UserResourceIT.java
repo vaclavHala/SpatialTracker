@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import cz.muni.fi.pv243.spatialtracker.SpatialTracker;
+import cz.muni.fi.pv243.spatialtracker.common.SpatialTrackerException;
 import cz.muni.fi.pv243.spatialtracker.config.Config;
 import static cz.muni.fi.pv243.spatialtracker.users.BasicAuthUtils.assembleBasicAuthHeader;
 import static cz.muni.fi.pv243.spatialtracker.users.UserGroup.USER;
@@ -65,6 +66,7 @@ public class UserResourceIT {
         WebArchive war = ShrinkWrap.create(WebArchive.class, UserResourceIT.class.getSimpleName() + ".war");
         war.addPackages(true,
                         UserResource.class.getPackage(),
+                        SpatialTrackerException.class.getPackage(),
                         Config.class.getPackage())
            .addPackages(false,
                         SpatialTracker.class.getPackage())

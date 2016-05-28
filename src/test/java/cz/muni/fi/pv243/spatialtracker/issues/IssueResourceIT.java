@@ -2,14 +2,12 @@ package cz.muni.fi.pv243.spatialtracker.issues;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mashape.unirest.http.Headers;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import cz.muni.fi.pv243.spatialtracker.SpatialTracker;
+import cz.muni.fi.pv243.spatialtracker.common.SpatialTrackerException;
 import cz.muni.fi.pv243.spatialtracker.config.Config;
-import cz.muni.fi.pv243.spatialtracker.config.Property;
-import static cz.muni.fi.pv243.spatialtracker.config.PropertyType.REDMINE_API_KEY;
-import static cz.muni.fi.pv243.spatialtracker.config.PropertyType.REDMINE_BASE_URL;
-import cz.muni.fi.pv243.spatialtracker.config.RedmineConfigJson;
 import static cz.muni.fi.pv243.spatialtracker.issues.IssueCategory.ADD;
 import static cz.muni.fi.pv243.spatialtracker.issues.IssueCategory.REMOVE;
 import static cz.muni.fi.pv243.spatialtracker.issues.IssueCategory.REPAIR;
@@ -17,16 +15,13 @@ import static cz.muni.fi.pv243.spatialtracker.issues.IssuePriority.CAN_HAVE;
 import static cz.muni.fi.pv243.spatialtracker.issues.IssuePriority.MUST_HAVE;
 import static cz.muni.fi.pv243.spatialtracker.issues.IssuePriority.SHOULD_HAVE;
 import static cz.muni.fi.pv243.spatialtracker.issues.IssueStatus.ACCEPTED;
+import static cz.muni.fi.pv243.spatialtracker.issues.IssueStatus.FIXED;
 import static cz.muni.fi.pv243.spatialtracker.issues.IssueStatus.REPORTED;
 import cz.muni.fi.pv243.spatialtracker.issues.dto.*;
 import static cz.muni.fi.pv243.spatialtracker.users.BasicAuthUtils.assembleBasicAuthHeader;
-import cz.muni.fi.pv243.spatialtracker.users.UserGroup;
 import cz.muni.fi.pv243.spatialtracker.users.UserResource;
 import cz.muni.fi.pv243.spatialtracker.users.dto.UserCreate;
-import cz.muni.fi.pv243.spatialtracker.users.redmine.RedmineGroupMapper;
-import cz.muni.fi.pv243.spatialtracker.users.redmine.dto.RedmineUserCreateResponse;
 import java.io.*;
-import static java.lang.String.format;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.sql.SQLException;
@@ -54,6 +49,7 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -76,6 +72,7 @@ public class IssueResourceIT {
         war.addPackages(true,
                         IssueResource.class.getPackage(),
                         UserResource.class.getPackage(),
+                        SpatialTrackerException.class.getPackage(),
                         Config.class.getPackage())
            .addPackages(false,
                         SpatialTracker.class.getPackage())
@@ -265,29 +262,91 @@ public class IssueResourceIT {
                        .basicAuth("admin", "admin")
                        .body(this.json.writeValueAsString(new IssueCreate("subject", null, MUST_HAVE, ADD, new Coordinates(10, 20))))
                        .asString();
-        String newIssueLocation = respReport.getHeaders().getFirst(LOCATION);
-        Matcher m = Pattern.compile("(\\d+)$").matcher(newIssueLocation);
-        m.find();
-        String issueId = m.group(1);
 
         IssueStatus newStatus = ACCEPTED;
         HttpResponse<String> respUpdate =
-                Unirest.post(appUrl + "rest/issue/" + issueId)
+                Unirest.post(appUrl + "rest/issue/" + extractNewIssueId(respReport.getHeaders()))
                        .header(CONTENT_TYPE, APPLICATION_JSON)
                        .header(ACCEPT, APPLICATION_JSON)
-                        //admin is in all groups
+                       //admin is in all groups
                        .basicAuth("admin", "admin")
                        .body(this.json.writeValueAsString(new IssueUpdateStatus(newStatus)))
                        .asString();
         assertThat(respUpdate.getStatus()).isEqualTo(204);
 
         HttpResponse<String> respFind =
-                Unirest.get(newIssueLocation)
+                Unirest.get(respReport.getHeaders().getFirst(LOCATION))
                        .header(ACCEPT, APPLICATION_JSON)
                        .asString();
         IssueDetailsFull foundIssue = this.json.readValue(respFind.getBody(), IssueDetailsFull.class);
 
         assertThat(foundIssue.status()).isEqualTo(newStatus);
+    }
+
+    //seems security module or some sec config has to be tweaked to make this work
+    @Ignore
+    @Test
+    public void shouldReturn401WhenUpdatingIssueAndNotWorker(
+            final @ArquillianResource URL appUrl) throws Exception {
+        String login = "not_worker";
+        String pass = "sneaky";
+        Unirest.post(appUrl + "rest/user")
+               .header(CONTENT_TYPE, APPLICATION_JSON)
+               .body(this.json.writeValueAsString(new UserCreate(login, pass, "mail@me.now")))
+               .asString();
+
+        long someIssueId = 1;
+        HttpResponse<String> respUpdate =
+                Unirest.post(appUrl + "rest/issue/" + someIssueId)
+                       .header(CONTENT_TYPE, APPLICATION_JSON)
+                       .header(ACCEPT, APPLICATION_JSON)
+                       .basicAuth("not_worker", "sneaky")
+                       .body(this.json.writeValueAsString(new IssueUpdateStatus(ACCEPTED)))
+                       .asString();
+        assertThat(respUpdate.getStatus()).isEqualTo(401);
+    }
+
+    @Test
+    public void shouldReturn403WhenUpdatingToIllegalStatus(
+            final @ArquillianResource URL appUrl) throws Exception {
+        HttpResponse<String> respReport =
+                Unirest.post(appUrl + "rest/issue")
+                       .header(CONTENT_TYPE, APPLICATION_JSON)
+                       .header(ACCEPT, APPLICATION_JSON)
+                       .basicAuth("admin", "admin")
+                       .body(this.json.writeValueAsString(new IssueCreate("subject", null, MUST_HAVE, ADD, new Coordinates(10, 20))))
+                       .asString();
+
+        HttpResponse<String> respUpdate =
+                Unirest.post(appUrl + "rest/issue/" + extractNewIssueId(respReport.getHeaders()))
+                       .header(CONTENT_TYPE, APPLICATION_JSON)
+                       .header(ACCEPT, APPLICATION_JSON)
+                       //admin is in all groups
+                       .basicAuth("admin", "admin")
+                       .body(this.json.writeValueAsString(new IssueUpdateStatus(FIXED)))
+                       .asString();
+        assertThat(respUpdate.getStatus()).isEqualTo(403);
+    }
+
+    private String extractNewIssueId(final Headers newIssueHeaders) {
+        Matcher m = Pattern.compile("(\\d+)$").matcher(newIssueHeaders.getFirst(LOCATION));
+        m.find();
+        return m.group(1);
+    }
+
+    @Test
+    public void shouldReturn404WhenUpdatingUnknownIssue(
+            final @ArquillianResource URL appUrl) throws Exception {
+        long unknownIssueId = 9999;
+        HttpResponse<String> respUpdate =
+                Unirest.post(appUrl + "rest/issue/" + unknownIssueId)
+                       .header(CONTENT_TYPE, APPLICATION_JSON)
+                       .header(ACCEPT, APPLICATION_JSON)
+                       //admin is in all groups
+                       .basicAuth("admin", "admin")
+                       .body(this.json.writeValueAsString(new IssueUpdateStatus(ACCEPTED)))
+                       .asString();
+        assertThat(respUpdate.getStatus()).isEqualTo(404);
     }
 
 }
