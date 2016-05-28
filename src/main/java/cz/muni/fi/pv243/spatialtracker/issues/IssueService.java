@@ -17,5 +17,7 @@ public interface IssueService {
 
     List<IssueDetailsBrief> searchFiltered(List<IssueFilter> filters);
 
+    void updateIssueState(long issueId, IssueStatus newStatus);
+
 
 }

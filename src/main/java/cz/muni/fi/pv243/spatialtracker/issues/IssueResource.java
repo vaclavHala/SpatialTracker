@@ -6,6 +6,7 @@ import cz.muni.fi.pv243.spatialtracker.MulticauseError;
 import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueCreate;
 import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueDetailsBrief;
 import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueDetailsFull;
+import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueUpdateStatus;
 import cz.muni.fi.pv243.spatialtracker.issues.filter.IssueFilter;
 import java.io.IOException;
 import java.net.URI;
@@ -34,7 +35,6 @@ import lombok.extern.slf4j.Slf4j;
 @Produces(APPLICATION_JSON)
 @Path("/issue")
 @DeclareRoles("USER")
-@RolesAllowed("USER")
 public class IssueResource {
 
     private static final TypeReference<List<IssueFilter>> ISSUE_FILTERS_LIST_TOKEN =
@@ -50,6 +50,7 @@ public class IssueResource {
     private ObjectMapper json;
 
     @POST
+    @RolesAllowed({"USER", "WORKER"})
     public Response createIssue(
             final @NotNull @Valid IssueCreate issue,
             final @Context UriInfo userApiLocation) throws MulticauseError {
@@ -59,6 +60,19 @@ public class IssueResource {
         URI newIssueResourcePath = userApiLocation.getAbsolutePathBuilder()
                                                   .path(String.valueOf(newIssueResourceId)).build();
         return Response.created(newIssueResourcePath).build();
+    }
+
+    @POST
+    @Path("/{id}")
+    @RolesAllowed("WORKER")
+    public Response updateIssueState(
+            final @NotNull @Valid IssueUpdateStatus statusUpdate,
+            final @PathParam("id") long forId) {
+        log.info("Request to update status of isue #{} to {}",
+                 forId, statusUpdate.status());
+        this.issueService.updateIssueState(forId, statusUpdate.status());
+        log.info("Issue status was updated in Redmine");
+        return Response.noContent().build();
     }
 
     @GET

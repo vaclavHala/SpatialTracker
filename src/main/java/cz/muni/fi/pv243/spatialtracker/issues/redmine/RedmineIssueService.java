@@ -12,6 +12,7 @@ import static cz.muni.fi.pv243.spatialtracker.config.PropertyType.REDMINE_BASE_U
 import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueCreate;
 import cz.muni.fi.pv243.spatialtracker.issues.redmine.dto.RedmineIssueCreate;
 import cz.muni.fi.pv243.spatialtracker.issues.IssueService;
+import cz.muni.fi.pv243.spatialtracker.issues.IssueStatus;
 import cz.muni.fi.pv243.spatialtracker.issues.dto.Coordinates;
 import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueDetailsBrief;
 import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueDetailsFull;
@@ -29,8 +30,7 @@ import java.util.Optional;
 import static java.util.stream.Collectors.toList;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
-import javax.ws.rs.Path;
-import javax.ws.rs.ProcessingException;
+import javax.ws.rs.*;
 import javax.ws.rs.client.Client;
 import static javax.ws.rs.client.Entity.json;
 import javax.ws.rs.client.WebTarget;
@@ -112,6 +112,41 @@ public class RedmineIssueService implements IssueService {
             }
         } catch (ProcessingException e) {
             throw new ServerError(e);
+        }
+    }
+
+    @Override
+    public void updateIssueState(final long issueId, final IssueStatus newStatus) {
+        log.info("Reguest to update status of issue #{} to {}", issueId, newStatus);
+        RedmineIssueUpdateStatus redmineUpdate =
+                new RedmineIssueUpdateStatus(this.statusMapper.toId(newStatus));
+        WebTarget target = this.restClient.target(this.redmineUrl).path("issues").path(issueId + ".json");
+        try (Closeable<Response> redmineResponse =
+                closeable(target.request(APPLICATION_JSON)
+                                .header("X-Redmine-API-Key", this.redmineKey)
+                                .buildPut(json(redmineUpdate))
+                                .invoke())) {
+            if (redmineResponse.get().getStatus() == 200) {
+                log.info("Update succeeded");
+            } else if (redmineResponse.get().getStatus() == 401) {
+                throw new NotAuthorizedException(Response.status(401).build());
+            } else if (redmineResponse.get().getStatus() == 404) {
+                throw new NotFoundException();
+            } else {
+                throw new ServerError("boom");
+            }
+        } catch (ProcessingException e) {
+            throw new ServerError(e);
+        }
+        //Redmine responds with OK even if nothing changed, we need to check manually
+        IssueDetailsFull updatedDetails = this.detailsFor(issueId).get();
+        if (updatedDetails.status().equals(newStatus)) {
+            log.info("Status of issue #{} was updated to {}", issueId, newStatus);
+            return;
+        } else {
+            log.info("Illegal state transition of issue #{}, wanted {} -> {}",
+                     issueId, updatedDetails.status(), newStatus);
+            throw new ForbiddenException();
         }
     }
 

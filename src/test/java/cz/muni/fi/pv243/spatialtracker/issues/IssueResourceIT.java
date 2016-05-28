@@ -6,27 +6,35 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import cz.muni.fi.pv243.spatialtracker.SpatialTracker;
 import cz.muni.fi.pv243.spatialtracker.config.Config;
+import cz.muni.fi.pv243.spatialtracker.config.Property;
+import static cz.muni.fi.pv243.spatialtracker.config.PropertyType.REDMINE_API_KEY;
+import static cz.muni.fi.pv243.spatialtracker.config.PropertyType.REDMINE_BASE_URL;
+import cz.muni.fi.pv243.spatialtracker.config.RedmineConfigJson;
 import static cz.muni.fi.pv243.spatialtracker.issues.IssueCategory.ADD;
 import static cz.muni.fi.pv243.spatialtracker.issues.IssueCategory.REMOVE;
 import static cz.muni.fi.pv243.spatialtracker.issues.IssueCategory.REPAIR;
 import static cz.muni.fi.pv243.spatialtracker.issues.IssuePriority.CAN_HAVE;
 import static cz.muni.fi.pv243.spatialtracker.issues.IssuePriority.MUST_HAVE;
 import static cz.muni.fi.pv243.spatialtracker.issues.IssuePriority.SHOULD_HAVE;
+import static cz.muni.fi.pv243.spatialtracker.issues.IssueStatus.ACCEPTED;
 import static cz.muni.fi.pv243.spatialtracker.issues.IssueStatus.REPORTED;
-import cz.muni.fi.pv243.spatialtracker.issues.dto.Coordinates;
-import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueCreate;
-import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueDetailsBrief;
-import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueDetailsFull;
+import cz.muni.fi.pv243.spatialtracker.issues.dto.*;
 import static cz.muni.fi.pv243.spatialtracker.users.BasicAuthUtils.assembleBasicAuthHeader;
+import cz.muni.fi.pv243.spatialtracker.users.UserGroup;
 import cz.muni.fi.pv243.spatialtracker.users.UserResource;
 import cz.muni.fi.pv243.spatialtracker.users.dto.UserCreate;
+import cz.muni.fi.pv243.spatialtracker.users.redmine.RedmineGroupMapper;
+import cz.muni.fi.pv243.spatialtracker.users.redmine.dto.RedmineUserCreateResponse;
 import java.io.*;
+import static java.lang.String.format;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import static java.util.Arrays.asList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.HttpHeaders.ACCEPT;
 import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
@@ -244,6 +252,42 @@ public class IssueResourceIT {
 
         assertThat(filteredIssues).usingElementComparatorOnFields("subject", "coords")
                                   .containsOnlyElementsOf(expectedIssues);
+    }
+
+    @Test
+    public void shouldAllowWorkerToUpdateIssueStatus(
+            final @ArquillianResource URL appUrl) throws Exception {
+
+        HttpResponse<String> respReport =
+                Unirest.post(appUrl + "rest/issue")
+                       .header(CONTENT_TYPE, APPLICATION_JSON)
+                       .header(ACCEPT, APPLICATION_JSON)
+                       .basicAuth("admin", "admin")
+                       .body(this.json.writeValueAsString(new IssueCreate("subject", null, MUST_HAVE, ADD, new Coordinates(10, 20))))
+                       .asString();
+        String newIssueLocation = respReport.getHeaders().getFirst(LOCATION);
+        Matcher m = Pattern.compile("(\\d+)$").matcher(newIssueLocation);
+        m.find();
+        String issueId = m.group(1);
+
+        IssueStatus newStatus = ACCEPTED;
+        HttpResponse<String> respUpdate =
+                Unirest.post(appUrl + "rest/issue/" + issueId)
+                       .header(CONTENT_TYPE, APPLICATION_JSON)
+                       .header(ACCEPT, APPLICATION_JSON)
+                        //admin is in all groups
+                       .basicAuth("admin", "admin")
+                       .body(this.json.writeValueAsString(new IssueUpdateStatus(newStatus)))
+                       .asString();
+        assertThat(respUpdate.getStatus()).isEqualTo(204);
+
+        HttpResponse<String> respFind =
+                Unirest.get(newIssueLocation)
+                       .header(ACCEPT, APPLICATION_JSON)
+                       .asString();
+        IssueDetailsFull foundIssue = this.json.readValue(respFind.getBody(), IssueDetailsFull.class);
+
+        assertThat(foundIssue.status()).isEqualTo(newStatus);
     }
 
 }

@@ -2495,6 +2495,8 @@ SELECT pg_catalog.setval('enumerations_id_seq', 5, true);
 -- Data for Name: groups_users; Type: TABLE DATA; Schema: public; Owner: redmine
 --
 
+INSERT INTO groups_users (group_id, user_id) VALUES (6, 1);
+INSERT INTO groups_users (group_id, user_id) VALUES (7, 1);
 
 
 --
@@ -2617,13 +2619,21 @@ INSERT INTO member_roles (id, member_id, role_id, inherited_from) VALUES (1, 1, 
 INSERT INTO member_roles (id, member_id, role_id, inherited_from) VALUES (2, 2, 5, NULL);
 INSERT INTO member_roles (id, member_id, role_id, inherited_from) VALUES (5, 5, 6, NULL);
 INSERT INTO member_roles (id, member_id, role_id, inherited_from) VALUES (6, 2, 6, NULL);
+INSERT INTO member_roles (id, member_id, role_id, inherited_from) VALUES (18, 11, 5, NULL);
+INSERT INTO member_roles (id, member_id, role_id, inherited_from) VALUES (19, 11, 6, NULL);
+INSERT INTO member_roles (id, member_id, role_id, inherited_from) VALUES (20, 11, 7, NULL);
+INSERT INTO member_roles (id, member_id, role_id, inherited_from) VALUES (36, 1, 5, 2);
+INSERT INTO member_roles (id, member_id, role_id, inherited_from) VALUES (37, 1, 6, 6);
+INSERT INTO member_roles (id, member_id, role_id, inherited_from) VALUES (38, 1, 5, 18);
+INSERT INTO member_roles (id, member_id, role_id, inherited_from) VALUES (39, 1, 6, 19);
+INSERT INTO member_roles (id, member_id, role_id, inherited_from) VALUES (40, 1, 7, 20);
 
 
 --
 -- Name: member_roles_id_seq; Type: SEQUENCE SET; Schema: public; Owner: redmine
 --
 
-SELECT pg_catalog.setval('member_roles_id_seq', 7, true);
+SELECT pg_catalog.setval('member_roles_id_seq', 40, true);
 
 
 --
@@ -2633,13 +2643,14 @@ SELECT pg_catalog.setval('member_roles_id_seq', 7, true);
 INSERT INTO members (id, user_id, project_id, created_on, mail_notification) VALUES (1, 1, 4, '2016-04-27 00:37:27.462984', false);
 INSERT INTO members (id, user_id, project_id, created_on, mail_notification) VALUES (2, 6, 4, '2016-05-21 18:34:30.523267', false);
 INSERT INTO members (id, user_id, project_id, created_on, mail_notification) VALUES (5, 2, 4, '2016-05-21 21:23:46.061361', false);
+INSERT INTO members (id, user_id, project_id, created_on, mail_notification) VALUES (11, 7, 4, '2016-05-28 14:17:55.991943', false);
 
 
 --
 -- Name: members_id_seq; Type: SEQUENCE SET; Schema: public; Owner: redmine
 --
 
-SELECT pg_catalog.setval('members_id_seq', 5, true);
+SELECT pg_catalog.setval('members_id_seq', 11, true);
 
 
 --
@@ -2832,13 +2843,36 @@ INSERT INTO roles (id, name, "position", assignable, builtin, permissions, issue
 INSERT INTO roles (id, name, "position", assignable, builtin, permissions, issues_visibility, users_visibility, time_entries_visibility, all_roles_managed) VALUES (6, 'role_issues_read', 5, true, 0, '---
 - :view_issues
 ', 'default', 'all', 'all', true);
+INSERT INTO roles (id, name, "position", assignable, builtin, permissions, issues_visibility, users_visibility, time_entries_visibility, all_roles_managed) VALUES (7, 'role_issues_workflow', 6, true, 0, '---
+- :manage_categories
+- :view_issues
+- :add_issues
+- :edit_issues
+- :copy_issues
+- :manage_issue_relations
+- :manage_subtasks
+- :set_issues_private
+- :set_own_issues_private
+- :add_issue_notes
+- :edit_issue_notes
+- :edit_own_issue_notes
+- :view_private_notes
+- :set_notes_private
+- :delete_issues
+- :manage_public_queries
+- :save_queries
+- :view_issue_watchers
+- :add_issue_watchers
+- :delete_issue_watchers
+- :import_issues
+', 'default', 'all', 'all', true);
 
 
 --
 -- Name: roles_id_seq; Type: SEQUENCE SET; Schema: public; Owner: redmine
 --
 
-SELECT pg_catalog.setval('roles_id_seq', 6, true);
+SELECT pg_catalog.setval('roles_id_seq', 7, true);
 
 
 --
@@ -3366,13 +3400,17 @@ INSERT INTO workflows (id, tracker_id, old_status_id, new_status_id, role_id, as
 INSERT INTO workflows (id, tracker_id, old_status_id, new_status_id, role_id, assignee, author, type, field_name, rule) VALUES (10, 1, 3, 5, 1, false, false, 'WorkflowTransition', NULL, NULL);
 INSERT INTO workflows (id, tracker_id, old_status_id, new_status_id, role_id, assignee, author, type, field_name, rule) VALUES (11, 1, 3, 5, 2, false, false, 'WorkflowTransition', NULL, NULL);
 INSERT INTO workflows (id, tracker_id, old_status_id, new_status_id, role_id, assignee, author, type, field_name, rule) VALUES (12, 1, 3, 5, 3, false, false, 'WorkflowTransition', NULL, NULL);
+INSERT INTO workflows (id, tracker_id, old_status_id, new_status_id, role_id, assignee, author, type, field_name, rule) VALUES (17, 1, 2, 3, 7, false, false, 'WorkflowTransition', NULL, NULL);
+INSERT INTO workflows (id, tracker_id, old_status_id, new_status_id, role_id, assignee, author, type, field_name, rule) VALUES (18, 1, 2, 4, 7, false, false, 'WorkflowTransition', NULL, NULL);
+INSERT INTO workflows (id, tracker_id, old_status_id, new_status_id, role_id, assignee, author, type, field_name, rule) VALUES (19, 1, 3, 4, 7, false, false, 'WorkflowTransition', NULL, NULL);
+INSERT INTO workflows (id, tracker_id, old_status_id, new_status_id, role_id, assignee, author, type, field_name, rule) VALUES (20, 1, 3, 5, 7, false, false, 'WorkflowTransition', NULL, NULL);
 
 
 --
 -- Name: workflows_id_seq; Type: SEQUENCE SET; Schema: public; Owner: redmine
 --
 
-SELECT pg_catalog.setval('workflows_id_seq', 12, true);
+SELECT pg_catalog.setval('workflows_id_seq', 20, true);
 
 
 --
