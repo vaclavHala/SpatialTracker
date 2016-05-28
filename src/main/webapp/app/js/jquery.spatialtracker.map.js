@@ -13,8 +13,7 @@
             lonField: '#lon',
             geolocationElement: '#deviceLocationBtn',
             editation: false,
-            lat: null,
-            lon: null,
+            coords: {},
             zoom: 14,
             
             init: null
@@ -52,8 +51,8 @@
                 this._initEditation();
             }
             
-            if (this.options.lat !== null && this.options.lon !== null) {
-                this._setMarker(this._marker, new google.maps.LatLng(this.options.lat, this.options.lon));
+            if (this.options.coords.lat && this.options.coords.lon) {
+                this._setMarker(this._marker, new google.maps.LatLng(this.options.coords.lat, this.options.coords.lon));
             }
             
             this._trigger('init', null, { map: this._map, marker: this._marker });
@@ -122,8 +121,8 @@
         },
         
         _setCoordinates: function (latLng) {
-            this._$latField.val(latLng.lat());
-            this._$lonField.val(latLng.lng());
+            this._$latField.val(latLng.lat()).trigger('input');
+            this._$lonField.val(latLng.lng()).trigger('input');
         },
         
         _setMarker: function(marker, location) {

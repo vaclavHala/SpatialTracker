@@ -1,4 +1,7 @@
 var spatialTrackerControllers = angular.module('spatialTrackerControllers', []);
+var categoryOptions = { 'ADD': 'Add', 'REMOVE': 'Remove', 'REPAIR': 'Repair', 'COMPLAINT': 'Complaint' };
+var statusOptions = { 'REPORTED': 'Reported', 'ACCEPTED': 'Accepted', 'REJECTED': 'Rejected', 'FIXED': 'Fixed' };
+var priorityOptions = { 'WANT_TO_HAVE': 'Want to have', 'CAN_HAVE': 'Can have', 'SHOULD_HAVE': 'Should have', 'MUST_HAVE': 'Must have' };
 
 spatialTrackerControllers.controller('LoginController', ['$scope', '$http', 
     function($scope, $http) {
@@ -63,7 +66,7 @@ spatialTrackerControllers.controller('RegisterController', ['$scope', '$http',
             
             $http.post('rest/user', $scope.user)
                 .success(function() {
-                    $scope.success = true;
+                    $scope.success = 'Registration was successful. You can now login.';
                 })
                 .error(function (data) {
                     $scope.errors = data.errors;
@@ -84,19 +87,72 @@ spatialTrackerControllers.controller('LogoutController', ['$scope', '$http',
 
 spatialTrackerControllers.controller('IssueController', ['$scope', '$http', 
     function($scope, $http) {
+        $scope.categoryOptions = categoryOptions;
+        $scope.statusOptions = statusOptions;
+        $scope.priorityOptions = priorityOptions;
         $scope.newIssue = { coords: { lat: 49.1952, lon: 16.6079 } };
+        $scope.newIssueCoords = $scope.newIssue.coords;
+        $scope.filter = [
+            { '@type': 'category', 'in': [], isEmpty: function () { return this.in.length === 0; } },
+            { '@type': 'status', 'in': [], isEmpty: function () { return this.in.length === 0; } },
+            { '@type': 'priority', isEmpty: function () { return !this.min || !this.max; } },
+            { '@type': 'spatial', isEmpty: function () { return isNaN(parseFloat(this.min_lat)) || isNaN(parseFloat(this.max_lat)) || isNaN(parseFloat(this.min_lon)) || isNaN(parseFloat(this.max_lon)); } }
+        ];
         $scope.createIssue = function () {
             delete $scope.success;
             delete $scope.errors;
             
             $http.post('rest/issue', $scope.newIssue)
                 .success(function() {
-                    $scope.success = true;
+                    $scope.success = 'Issue was successfuly created';
+                    $scope.displayIssues();
                 })
                 .error(function (data) {
                     $scope.errors = data.errors;
                 })
             ;
         };
+        $scope.displayIssues = function () {
+            var filter = $scope.filter.filter(function (filter) { return !filter.isEmpty(); });
+            
+            $http.get('rest/issue', { params: { filter: JSON.stringify(filter) } }).success(function (issues) {
+                $scope.issues = issues;
+            });
+        };
+        
+        $scope.displayIssues();
+        $('#map').spatialtrackermap({ editation: true });
+        $('select[multiple]').css('width', '100%').select2();
+    }
+]);
+
+spatialTrackerControllers.controller('IssueDetailController', ['$scope', '$http', '$routeParams', '$resource', 
+    function($scope, $http, $routeParams, $resource) {
+        $http.get('rest/issue/' + $routeParams.issueId).success(function (issue) {
+            $scope.issue = issue;
+            
+            $('#map').spatialtrackermap({ coords: issue.coords });
+        });
+        
+        var roomName = 'issue' + $routeParams.issueId;
+        var Message = $resource('rest/messages/' + roomName);
+
+        $scope.messages = [];
+        $scope.addMessage = function() {
+            var message = new Message();
+            message.text = $scope.messageText;
+            message.$save();
+
+            $scope.messageText = '';
+        };
+
+        Socket.subscribe('/socket/messages/' + roomName, function(message) {
+            $scope.messages.push(message);
+            $scope.$digest();
+        });
+
+        Message.query(function(messages) {
+            $scope.messages = messages;
+        });
     }
 ]);
