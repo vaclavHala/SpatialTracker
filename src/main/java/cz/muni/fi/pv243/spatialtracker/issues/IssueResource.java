@@ -90,6 +90,14 @@ public class IssueResource {
     @GET
     @PermitAll
     public Response searchFiltered(final @QueryParam("filter") String rawFilter) throws MulticauseError {
+        List<IssueFilter> filters = getFilters(rawFilter);
+        log.debug("Searching for issues using filters: {}", filters);
+        List<IssueDetailsBrief> foundIssues = this.issueService.searchFiltered(filters);
+        log.debug("Found {} issues: {}", foundIssues.size(), foundIssues);
+        return Response.ok(foundIssues).build();
+    }
+
+    public List<IssueFilter> getFilters(String rawFilter) throws MulticauseError {
         List<IssueFilter> filters;
         try {
             filters = this.json.readValue(rawFilter, ISSUE_FILTERS_LIST_TOKEN);
@@ -97,9 +105,6 @@ public class IssueResource {
             log.warn("{Invalid filter:}", ex);
             throw new MulticauseError(asList("Invalid issue filter"));
         }
-        log.debug("Searching for issues using filters: {}", filters);
-        List<IssueDetailsBrief> foundIssues = this.issueService.searchFiltered(filters);
-        log.debug("Found {} issues: {}", foundIssues.size(), foundIssues);
-        return Response.ok(foundIssues).build();
+        return filters;
     }
 }
