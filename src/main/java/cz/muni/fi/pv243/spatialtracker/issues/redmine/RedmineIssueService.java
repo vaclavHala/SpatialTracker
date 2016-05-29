@@ -43,8 +43,6 @@ import javax.ws.rs.core.Response;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Stateless
-@Path("/issue")
 public class RedmineIssueService implements IssueService {
 
     private static long SPATIAL_PROJECT_ID = 4;
