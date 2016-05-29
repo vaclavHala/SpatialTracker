@@ -169,15 +169,16 @@ public class RedmineIssueService implements IssueService {
             throw new BackendServiceException(e);
         }
         //Redmine responds with OK even if nothing changed, we need to check manually
-        IssueDetailsFull updatedDetails = this.detailsFor(issueId);
-        if (updatedDetails.status().equals(newStatus)) {
+        RedmineIssueDetails updatedIssue = this.redmineDetailFor(issueId);
+        IssueStatus updatedStatus = this.statusMapper.fromId(updatedIssue.status().id());
+        if (updatedStatus.equals(newStatus)) {
             log.info("Status of issue #{} was updated to {}", issueId, newStatus);
             IssueStatusUpdateEvent event = new IssueStatusUpdateEvent(issueId, initialStatus, newStatus);
             this.statusUpdateEvent.fire(event);
         } else {
             log.info("Illegal state transition of issue #{}, wanted {} -> {}",
-                     issueId, updatedDetails.status(), newStatus);
-            throw new IllegalOperationException(updatedDetails.status() + " -> " + newStatus);
+                     issueId, updatedStatus, newStatus);
+            throw new IllegalOperationException(updatedStatus + " -> " + newStatus);
         }
     }
 
