@@ -7,13 +7,15 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
-import org.infinispan.transaction.TransactionMode;
-import org.infinispan.util.concurrent.IsolationLevel;
 
 import javax.annotation.PreDestroy;
+import javax.annotation.Priority;
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Named;
+import javax.enterprise.inject.Alternative;
+import static javax.interceptor.Interceptor.Priority.APPLICATION;
 
+@Priority(APPLICATION)
+@Alternative
 @ApplicationScoped
 public class TestCacheContainerProvider implements CacheContainerProvider {
 

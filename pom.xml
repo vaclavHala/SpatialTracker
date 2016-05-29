@@ -31,15 +31,8 @@
     <dependencies>
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-commons</artifactId>
-            <version>8.2.2.Final</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.infinispan</groupId>
             <artifactId>infinispan-core</artifactId>
             <version>8.2.2.Final</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.picketbox</groupId>
