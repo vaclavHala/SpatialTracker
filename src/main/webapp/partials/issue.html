@@ -1,0 +1,37 @@
+<h2>Issue</h2>
+<div class="row">
+    <div class="col-md-6">
+        <table class="table table-striped">
+            <tr ng-repeat="key in ['subject', 'description', 'status', 'priority', 'category', 'started', 'author', 'coords']">
+                <th>{{ key }}</th>
+                <th>{{ issue[key] }}</th>
+            </tr>
+        </table>
+    </div>
+    <div class="col-md-6">
+        <div id="map"></div>
+    </div>
+</div>
+<div ng-show="loggedUser">
+    <h3>Chat</h3>
+    <div class="panel panel-default">
+        <div class="panel-heading">Post Message</div>
+        <div class="panel-body">
+            <form ng-submit="addMessage(message)">
+                <div class="form-group">
+                    <label for="message" class="control-label">Message:</label>
+                    <input type="text" id="message" ng-model="messageText" class="form-control" required="required" />
+                </div>
+                <div class="form-group">
+                    <input type="submit" class="btn btn-primary" value="Send" />
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="well">
+        <dl id="chat" class="dl-horizontal">
+            <dt ng-repeat-start="message in messages | reverse">{{ message.name }}  <i>{{ message.created }}</i></dt>
+            <dd ng-repeat-end="">{{ message.text }}</dd>
+        </dl>
+    </div>
+</div>

@@ -1,6 +1,8 @@
 package cz.muni.fi.pv243.spatialtracker.infinispan;
 
 import cz.muni.fi.pv243.spatialtracker.MulticauseError;
+import cz.muni.fi.pv243.spatialtracker.common.BackendServiceException;
+import cz.muni.fi.pv243.spatialtracker.common.InvalidInputException;
 import cz.muni.fi.pv243.spatialtracker.issues.IssueCategory;
 import cz.muni.fi.pv243.spatialtracker.issues.IssueResource;
 import cz.muni.fi.pv243.spatialtracker.issues.IssueService;
@@ -16,6 +18,7 @@ import javax.annotation.security.RolesAllowed;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.ws.rs.*;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,7 +51,15 @@ public class Resource {
     @PermitAll
     @Path("/heat_map")
     public void createHeatMap(final @QueryParam("filter") String rawFilter) throws MulticauseError {
-        List<IssueDetailsBrief> issues = issueService.searchFiltered(issueResource.getFilters(rawFilter));
+        try {
+            List<IssueDetailsBrief> issues = issueService.searchFiltered(issueResource.getFilters(rawFilter));
+        } catch (InvalidInputException e) {
+            e.printStackTrace();
+        } catch (BackendServiceException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 

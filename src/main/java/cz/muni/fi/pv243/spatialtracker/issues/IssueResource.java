@@ -1,11 +1,19 @@
+
 package cz.muni.fi.pv243.spatialtracker.issues;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import cz.muni.fi.pv243.spatialtracker.ErrorReport;
 import cz.muni.fi.pv243.spatialtracker.MulticauseError;
+import cz.muni.fi.pv243.spatialtracker.common.BackendServiceException;
+import cz.muni.fi.pv243.spatialtracker.common.IllegalOperationException;
+import cz.muni.fi.pv243.spatialtracker.common.InvalidInputException;
+import cz.muni.fi.pv243.spatialtracker.common.UnauthorizedException;
+import cz.muni.fi.pv243.spatialtracker.common.NotFoundException;
 import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueCreate;
 import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueDetailsBrief;
 import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueDetailsFull;
+import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueUpdateStatus;
 import cz.muni.fi.pv243.spatialtracker.issues.filter.IssueFilter;
 import java.io.IOException;
 import java.net.URI;
@@ -34,7 +42,6 @@ import lombok.extern.slf4j.Slf4j;
 @Produces(APPLICATION_JSON)
 @Path("/issue")
 @DeclareRoles("USER")
-@RolesAllowed("USER")
 public class IssueResource {
 
     private static final TypeReference<List<IssueFilter>> ISSUE_FILTERS_LIST_TOKEN =
@@ -50,15 +57,59 @@ public class IssueResource {
     private ObjectMapper json;
 
     @POST
+    @RolesAllowed({"USER", "WORKER"})
     public Response createIssue(
             final @NotNull @Valid IssueCreate issue,
             final @Context UriInfo userApiLocation) throws MulticauseError {
         String user = this.ctx.getCallerPrincipal().getName();
         log.info("New issue report from user {}: {}", user, issue);
-        long newIssueResourceId = this.issueService.report(issue, user);
-        URI newIssueResourcePath = userApiLocation.getAbsolutePathBuilder()
-                                                  .path(String.valueOf(newIssueResourceId)).build();
-        return Response.created(newIssueResourcePath).build();
+        try {
+            long newIssueResourceId = this.issueService.report(issue, user);
+            URI newIssueResourcePath = userApiLocation.getAbsolutePathBuilder()
+                    .path(String.valueOf(newIssueResourceId)).build();
+            log.info("Issue was created at {}", newIssueResourcePath);
+            return Response.created(newIssueResourcePath).build();
+        } catch (UnauthorizedException e) {
+            log.warn("Unauthorized issue creation attempt", e);
+            return Response.status(401).build();
+        } catch (InvalidInputException e) {
+            log.warn("Error in issue creation attempt", e);
+            Response.ResponseBuilder builder = Response.status(400);
+            if (!e.errors().isEmpty()) {
+                ErrorReport report = new ErrorReport(e.errors());
+                builder.entity(report);
+            }
+            return builder.build();
+        } catch (BackendServiceException e) {
+            return Response.status(500).build();
+        }
+    }
+
+    @POST
+    @Path("/{id}")
+    @RolesAllowed("WORKER")
+    public Response updateIssueState(
+            final @NotNull @Valid IssueUpdateStatus statusUpdate,
+            final @PathParam("id") long forId) {
+        log.info("Request to update status of isue #{} to {}",
+                forId, statusUpdate.status());
+        try {
+            this.issueService.updateIssueState(forId, statusUpdate.status());
+            log.info("Issue status was updated in Redmine");
+            return Response.status(204).build();
+        } catch (UnauthorizedException e) {
+            log.warn("Unauthorized issue state update", e);
+            return Response.status(401).build();
+        } catch (IllegalOperationException e) {
+            log.warn("Illegal issue state transition", e);
+            return Response.status(403).build();
+        } catch (NotFoundException e) {
+            log.warn("Request to update state of non-existent issue", e);
+            return Response.status(404).build();
+        } catch (BackendServiceException e) {
+            log.warn("Internal error when updating issue status", e);
+            return Response.status(500).build();
+        }
     }
 
     @GET
@@ -66,14 +117,17 @@ public class IssueResource {
     @PermitAll
     public Response detailsFor(final @PathParam("id") long forId) {
         log.info("Request to display isue #{}", forId);
-        Optional<IssueDetailsFull> issue = this.issueService.detailsFor(forId);
-        if (issue.isPresent()) {
+        try {
+            IssueDetailsFull issue = this.issueService.detailsFor(forId);
             log.info("Issue #{} was found", forId);
-            log.debug("Issue #{}: {}", forId, issue.get());
-            return Response.ok(issue.get()).build();
-        } else {
-            log.info("Issue #{} does not exist", forId);
+            log.debug("Issue #{}: {}", forId, issue);
+            return Response.ok(issue).build();
+        } catch (NotFoundException e) {
+            log.warn("Request to view details of non-existent issue", e);
             return Response.status(404).build();
+        } catch (BackendServiceException e) {
+            log.warn("Internal error when updating issue status", e);
+            return Response.status(500).build();
         }
     }
 
@@ -90,21 +144,30 @@ public class IssueResource {
     @GET
     @PermitAll
     public Response searchFiltered(final @QueryParam("filter") String rawFilter) throws MulticauseError {
-        List<IssueFilter> filters = getFilters(rawFilter);
+        List<IssueFilter> filters = null;
+        try {
+            filters = getFilters(rawFilter);
+        } catch (IOException e) {
+            log.warn("Trying to search for issues using invalid filter: {}", rawFilter, e);
+            return Response.status(400)
+                    .entity(new ErrorReport(asList("Invalid issue filter")))
+                    .build();
+        }
         log.debug("Searching for issues using filters: {}", filters);
-        List<IssueDetailsBrief> foundIssues = this.issueService.searchFiltered(filters);
-        log.debug("Found {} issues: {}", foundIssues.size(), foundIssues);
-        return Response.ok(foundIssues).build();
+        try {
+            List<IssueDetailsBrief> foundIssues = this.issueService.searchFiltered(filters);
+            log.debug("Found {} issues: {}", foundIssues.size(), foundIssues);
+            return Response.ok(foundIssues).build();
+        } catch (InvalidInputException e) {
+            log.warn("Trying to search for issues using invalid filter set", e);
+            return Response.status(400).build();
+        } catch (BackendServiceException e) {
+            log.warn("Internal error when searching for issues", e);
+            return Response.status(500).build();
+        }
     }
 
-    public List<IssueFilter> getFilters(String rawFilter) throws MulticauseError {
-        List<IssueFilter> filters;
-        try {
-            filters = this.json.readValue(rawFilter, ISSUE_FILTERS_LIST_TOKEN);
-        } catch (IOException ex) {
-            log.warn("{Invalid filter:}", ex);
-            throw new MulticauseError(asList("Invalid issue filter"));
-        }
-        return filters;
+    public List<IssueFilter> getFilters(String rawFilter) throws MulticauseError, IOException {
+        return this.json.readValue(rawFilter, ISSUE_FILTERS_LIST_TOKEN);
     }
 }
