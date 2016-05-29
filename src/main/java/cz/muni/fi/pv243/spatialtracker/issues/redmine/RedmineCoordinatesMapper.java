@@ -1,7 +1,7 @@
 package cz.muni.fi.pv243.spatialtracker.issues.redmine;
 
-import cz.muni.fi.pv243.spatialtracker.CustomField;
-import cz.muni.fi.pv243.spatialtracker.CustomFieldsException;
+import cz.muni.fi.pv243.spatialtracker.common.redmine.CustomField;
+import cz.muni.fi.pv243.spatialtracker.common.redmine.CustomFieldsException;
 import cz.muni.fi.pv243.spatialtracker.issues.dto.Coordinates;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +11,7 @@ public class RedmineCoordinatesMapper {
     static final int LATITUDE = 2;
     static final int LONGITUDE = 3;
 
-    public Coordinates readFrom(final List<CustomField> customFields) {
+    public Coordinates readFrom(final List<CustomField> customFields) throws CustomFieldsException{
         Double lon = null;
         Double lat = null;
         for (CustomField field : customFields) {

@@ -144,7 +144,7 @@ public class IssueResourceIT {
                        .header(ACCEPT, APPLICATION_JSON)
                        .body(this.json.writeValueAsString(newIssue))
                        .asString();
-        assertThat(respReport.getStatus()).isEqualTo(403);
+        assertThat(respReport.getStatus()).isEqualTo(401);
     }
 
     @Test
@@ -283,8 +283,6 @@ public class IssueResourceIT {
         assertThat(foundIssue.status()).isEqualTo(newStatus);
     }
 
-    //seems security module or some sec config has to be tweaked to make this work
-    @Ignore
     @Test
     public void shouldReturn401WhenUpdatingIssueAndNotWorker(
             final @ArquillianResource URL appUrl) throws Exception {

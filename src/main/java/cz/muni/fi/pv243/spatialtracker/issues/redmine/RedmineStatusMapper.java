@@ -1,8 +1,8 @@
 
 package cz.muni.fi.pv243.spatialtracker.issues.redmine;
 
-import cz.muni.fi.pv243.spatialtracker.EnumMapper;
-import static cz.muni.fi.pv243.spatialtracker.EnumMapper.Mapping.map;
+import cz.muni.fi.pv243.spatialtracker.common.EnumMapper;
+import static cz.muni.fi.pv243.spatialtracker.common.EnumMapper.Mapping.map;
 import cz.muni.fi.pv243.spatialtracker.issues.IssueStatus;
 import static cz.muni.fi.pv243.spatialtracker.issues.IssueStatus.ACCEPTED;
 import static cz.muni.fi.pv243.spatialtracker.issues.IssueStatus.FIXED;
