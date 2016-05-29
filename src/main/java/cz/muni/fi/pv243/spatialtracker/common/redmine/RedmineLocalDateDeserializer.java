@@ -1,4 +1,4 @@
-package cz.muni.fi.pv243.spatialtracker;
+package cz.muni.fi.pv243.spatialtracker.common.redmine;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;

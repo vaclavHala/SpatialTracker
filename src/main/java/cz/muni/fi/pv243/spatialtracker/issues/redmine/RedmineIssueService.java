@@ -1,12 +1,16 @@
 package cz.muni.fi.pv243.spatialtracker.issues.redmine;
 
+import cz.muni.fi.pv243.spatialtracker.common.Closeable;
+import cz.muni.fi.pv243.spatialtracker.common.redmine.RedmineErrorReport;
+import cz.muni.fi.pv243.spatialtracker.common.redmine.CustomField;
 import cz.muni.fi.pv243.spatialtracker.*;
-import static cz.muni.fi.pv243.spatialtracker.Closeable.closeable;
+import static cz.muni.fi.pv243.spatialtracker.common.Closeable.closeable;
 import cz.muni.fi.pv243.spatialtracker.common.BackendServiceException;
 import cz.muni.fi.pv243.spatialtracker.common.IllegalOperationException;
 import cz.muni.fi.pv243.spatialtracker.common.InvalidInputException;
 import cz.muni.fi.pv243.spatialtracker.common.NotFoundException;
 import cz.muni.fi.pv243.spatialtracker.common.UnauthorizedException;
+import cz.muni.fi.pv243.spatialtracker.common.redmine.CustomFieldsException;
 import cz.muni.fi.pv243.spatialtracker.config.Property;
 import static cz.muni.fi.pv243.spatialtracker.config.PropertyType.INTEGRATION_PROJECT_ID;
 import static cz.muni.fi.pv243.spatialtracker.config.PropertyType.REDMINE_API_KEY;
@@ -173,6 +177,13 @@ public class RedmineIssueService implements IssueService {
                 RedmineUserDetails redmineUserdetails =
                         this.userService.detailsRedmineSomeUser(redmineIssueDetails.author().id());
                 log.debug("Issue #{}: {}", issueId, redmineIssueDetails);
+                Coordinates coords;
+                try {
+                    coords = this.coordsMapper.readFrom(redmineIssueDetails.customFields());
+                } catch (CustomFieldsException e) {
+                    throw new BackendServiceException(e);
+                }
+
                 return new IssueDetailsFull(redmineIssueDetails.subject(),
                                             redmineIssueDetails.description(),
                                             this.statusMapper.fromId(redmineIssueDetails.status().id()),
@@ -180,7 +191,7 @@ public class RedmineIssueService implements IssueService {
                                             this.categoryMapper.fromId(redmineIssueDetails.category().id()),
                                             redmineIssueDetails.startedDate(),
                                             redmineUserdetails.login(),
-                                            this.coordsMapper.readFrom(redmineIssueDetails.customFields()));
+                                            coords);
             } else if (redmineResponse.get().getStatus() == 404) {
                 throw new NotFoundException(issueId);
             } else {
@@ -198,11 +209,19 @@ public class RedmineIssueService implements IssueService {
 
         return this.getAllIssuesFor(redmineQueryFilter).stream()
                    .map((RedmineIssueDetails redmineIssue) -> {
-                       Coordinates coords = this.coordsMapper.readFrom(redmineIssue.customFields());
+                       Coordinates coords;
+                       try {
+                           coords = this.coordsMapper.readFrom(redmineIssue.customFields());
+                       } catch (CustomFieldsException e) {
+                           log.error("Received issue without valid coords: {}", redmineIssue);
+                           return null;
+                       }
                        return new IssueDetailsBrief(redmineIssue.id(),
                                                     redmineIssue.subject(),
                                                     coords);
-                   }).collect(toList());
+                   })
+                   .filter(x -> x != null) //filter out issues with invalid coords
+                   .collect(toList());
     }
 
     /**

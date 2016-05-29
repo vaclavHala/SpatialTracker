@@ -1,4 +1,4 @@
-package cz.muni.fi.pv243.spatialtracker;
+package cz.muni.fi.pv243.spatialtracker.common.redmine;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;

@@ -10,6 +10,6 @@ public class EJBAccessExceptionMapper implements ExceptionMapper<EJBAccessExcept
 
     @Override
     public Response toResponse(final EJBAccessException exception) {
-        return Response.status(Response.Status.FORBIDDEN).build();
+        return Response.status(Response.Status.UNAUTHORIZED).build();
     }
 }

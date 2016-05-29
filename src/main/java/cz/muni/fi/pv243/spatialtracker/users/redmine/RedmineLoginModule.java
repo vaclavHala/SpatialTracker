@@ -1,8 +1,6 @@
 package cz.muni.fi.pv243.spatialtracker.users.redmine;
 
-import cz.muni.fi.pv243.spatialtracker.MulticauseError;
 import cz.muni.fi.pv243.spatialtracker.users.UserGroup;
-import cz.muni.fi.pv243.spatialtracker.users.UserService;
 import cz.muni.fi.pv243.spatialtracker.users.dto.UserDetails;
 import java.io.IOException;
 import java.security.Principal;
@@ -18,8 +16,6 @@ import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.LoginException;
-import javax.ws.rs.NotAuthorizedException;
-import javax.ws.rs.core.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.jboss.security.SimpleGroup;
 import org.jboss.security.SimplePrincipal;

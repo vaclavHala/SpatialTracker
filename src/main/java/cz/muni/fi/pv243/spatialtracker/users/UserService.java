@@ -1,24 +1,25 @@
 package cz.muni.fi.pv243.spatialtracker.users;
 
-import cz.muni.fi.pv243.spatialtracker.MulticauseError;
+import cz.muni.fi.pv243.spatialtracker.common.BackendServiceException;
+import cz.muni.fi.pv243.spatialtracker.common.InvalidInputException;
+import cz.muni.fi.pv243.spatialtracker.common.NotFoundException;
+import cz.muni.fi.pv243.spatialtracker.common.UnauthorizedException;
 import cz.muni.fi.pv243.spatialtracker.users.dto.*;
-import java.util.Optional;
 
 public interface UserService {
 
-    String register(final UserCreate newUser) throws MulticauseError;
+    String register(final UserCreate newUser)
+            throws InvalidInputException, BackendServiceException;
 
-    void addToGroup(String login, UserGroup group) throws MulticauseError ;
+    UserDetails detailsSomeUser(final String login)
+            throws NotFoundException, BackendServiceException;
 
-    Optional<UserDetails> detailsSomeUser(final String login);
-
-    //TODO need to come up with how / if we need this
-    //List<UserDetails> detailsFilteredUsers(final Predicate<UserDetails> query);
-
-    UserDetails detailsCurrentUser(final String login, final String password) throws MulticauseError;
+    UserDetails detailsCurrentUser(final String login, final String password)
+            throws UnauthorizedException, BackendServiceException;
 
     //TODO do we update by field or as a whole?
 
-    void deleteCurrentUser(final String login, final String password) throws MulticauseError;
+    void deleteCurrentUser(final String login, final String password)
+            throws UnauthorizedException, BackendServiceException;
 
 }

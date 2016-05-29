@@ -1,4 +1,4 @@
-package cz.muni.fi.pv243.spatialtracker;
+package cz.muni.fi.pv243.spatialtracker.common;
 
 import java.util.HashMap;
 import java.util.List;

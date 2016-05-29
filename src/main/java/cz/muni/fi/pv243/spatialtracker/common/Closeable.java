@@ -1,5 +1,5 @@
 
-package cz.muni.fi.pv243.spatialtracker;
+package cz.muni.fi.pv243.spatialtracker.common;
 
 import java.util.function.Consumer;
 import javax.ws.rs.core.Response;

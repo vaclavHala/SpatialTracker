@@ -1,7 +1,10 @@
 package cz.muni.fi.pv243.spatialtracker.users.redmine;
 
+import cz.muni.fi.pv243.spatialtracker.common.Closeable;
+import cz.muni.fi.pv243.spatialtracker.common.redmine.RedmineErrorReport;
 import cz.muni.fi.pv243.spatialtracker.*;
-import static cz.muni.fi.pv243.spatialtracker.Closeable.closeable;
+import cz.muni.fi.pv243.spatialtracker.common.*;
+import static cz.muni.fi.pv243.spatialtracker.common.Closeable.closeable;
 import cz.muni.fi.pv243.spatialtracker.config.Property;
 import cz.muni.fi.pv243.spatialtracker.users.UserService;
 import static cz.muni.fi.pv243.spatialtracker.config.PropertyType.REDMINE_API_KEY;
@@ -17,6 +20,8 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.NotAuthorizedException;
@@ -49,12 +54,13 @@ public class RedmineUserService implements UserService {
     private RedmineGroupMapper groupMapper;
 
     @Override
-    public String register(final UserCreate newUser) throws MulticauseError {
+    public String register(final UserCreate newUser) throws InvalidInputException, BackendServiceException {
         RedmineUserCreate redmineNewUser = new RedmineUserCreate(newUser.login(),
                                                                  newUser.password(),
                                                                  EMPTY,
                                                                  EMPTY,
                                                                  newUser.email());
+        RedmineUserCreateResponse newRedmineUser;
         WebTarget target = this.restClient.target(this.redmineUrl + "users.json");
         try (Closeable<Response> redmineResponse =
                 closeable(target.request(APPLICATION_JSON)
@@ -63,52 +69,49 @@ public class RedmineUserService implements UserService {
                                 .invoke())) {
             if (redmineResponse.get().getStatus() == 201) {
                 log.info("User was created in Redmine");
-                RedmineUserCreateResponse resp = redmineResponse.get().readEntity(RedmineUserCreateResponse.class);
-                try {
-                    this.addToGroup(resp.id(), this.groupMapper.toRedmineId(USER));
-                } catch (MulticauseError e) {
-                    log.warn("Could not add new user to group. Deleting from Redmine.");
-                    this.deleteCurrentUser(newUser.login(), newUser.password());
-                    throw e;
-                }
-                return resp.login();
-            } else {
+                newRedmineUser = redmineResponse.get().readEntity(RedmineUserCreateResponse.class);
+            } else if (redmineResponse.get().getStatus() == 422) {
                 List<String> errors = this.extractErrorReport(redmineResponse.get());
-                log.info("Failed to create user: {}", errors);
-                throw new MulticauseError(errors);
+                throw new InvalidInputException(errors);
+            } else {
+                throw new BackendServiceException(redmineResponse.get().readEntity(String.class));
             }
         } catch (ProcessingException e) {
-            throw new ServerError(e);
+            throw new BackendServiceException(e);
         }
-    }
 
-    @Override
-    public void addToGroup(final String login, final UserGroup group) throws MulticauseError {
-        RedmineUserDetails details = this.detailsRedmineSomeUser(login);
-        this.addToGroup(details.id(), this.groupMapper.toRedmineId(group));
-    }
-
-    @Override
-    public Optional<UserDetails> detailsSomeUser(final String login) {
-        RedmineUserDetails redmineDetails = this.detailsRedmineSomeUser(login);
-        if (redmineDetails == null) {
-            return Optional.empty();
+        try {
+            this.addToGroup(newRedmineUser.id(), this.groupMapper.toRedmineId(USER));
+        } catch (NotFoundException | UnauthorizedException e) {
+            throw new BackendServiceException(e);
         }
-        return Optional.of(this.mapRedmineUser(redmineDetails));
+
+        return newRedmineUser.login();
     }
 
     @Override
-    public UserDetails detailsCurrentUser(final String login, final String password) throws MulticauseError {
+    public UserDetails detailsSomeUser(final String login) throws NotFoundException, BackendServiceException {
+        return this.mapRedmineUser(this.detailsRedmineSomeUser(login));
+    }
+
+    @Override
+    public UserDetails detailsCurrentUser(final String login, final String password) throws UnauthorizedException, BackendServiceException {
         //this blows up with invalid credentials
         RedmineUserDetails redmineDetails = this.detailsRedmineCurrentUser(login, password);
         //redmine only allows group view for administrators
         //we dont want all users to have admin access, so this is a workaround
-        RedmineUserDetails redmineDetailsWithGroups = this.detailsRedmineSomeUser(redmineDetails.id());
-        return this.mapRedmineUser(redmineDetailsWithGroups);
+        try {
+            RedmineUserDetails redmineDetailsWithGroups = this.detailsRedmineSomeUser(redmineDetails.id());
+            return this.mapRedmineUser(redmineDetailsWithGroups);
+        } catch (NotFoundException e) {
+            //we have just checked if the user exists above and he did
+            //something fishy here, probably a race, definitely our fault though
+            throw new BackendServiceException(e);
+        }
     }
 
     @Override
-    public void deleteCurrentUser(final String login, final String password) throws MulticauseError {
+    public void deleteCurrentUser(final String login, final String password) throws UnauthorizedException, BackendServiceException {
         log.info("Request to delete current user: {}", login);
         RedmineUserDetails redmineUser = this.detailsRedmineCurrentUser(login, password);
         String deleteUserUri = format("%susers/%d.json",
@@ -120,17 +123,23 @@ public class RedmineUserService implements UserService {
                                 .header("X-Redmine-API-Key", this.redmineKey)
                                 .buildDelete()
                                 .invoke())) {
-            if (redmineResponse.get().getStatus() != 200) {
-                List<String> errors = this.extractErrorReport(redmineResponse.get());
-                log.info("Failed to delete user: {}", errors);
-                throw new MulticauseError(errors);
+            if (redmineResponse.get().getStatus() == 200) {
+                log.debug("User {} was deleted in Redmine", login);
+            } else if (redmineResponse.get().getStatus() == 403) {
+
+            } else if (redmineResponse.get().getStatus() == 0) {
+
+            } else {
+                throw new BackendServiceException(redmineResponse.get().readEntity(String.class));
             }
         } catch (ProcessingException e) {
-            throw new ServerError(e);
+            throw new BackendServiceException(e);
         }
     }
 
-    private void addToGroup(final long userId, final long groupId) throws MulticauseError {
+    public void addToGroup(final long userId, final long groupId) throws NotFoundException,
+                                                                 UnauthorizedException,
+                                                                 BackendServiceException {
         RedmineUserId redmineUserId = new RedmineUserId(userId);
         WebTarget target = this.restClient.target(this.redmineUrl +
                                                   format("groups/%d/users.json", groupId));
@@ -141,24 +150,17 @@ public class RedmineUserService implements UserService {
                                 .invoke())) {
             if (redmineResponse.get().getStatus() == 200) {
                 log.info("User #{} added to group #{}", userId, groupId);
-            } else if (redmineResponse.get().getStatus() == 422) {
-                List<String> errors = this.extractErrorReport(redmineResponse.get());
-                log.warn("Failed to add user #{} to group #{}: {}",
-                         userId, groupId, errors);
-                throw new MulticauseError(errors);
+            } else if (redmineResponse.get().getStatus() == 404) {
+                throw new NotFoundException(userId);
             } else {
-                log.info("Failed to add user #{} to group #{}: {} - {}",
-                         userId, groupId,
-                         redmineResponse.get().getStatus(),
-                         redmineResponse.get().readEntity(String.class));
-                throw new MulticauseError(asList("Could not add user to group."));
+                throw new BackendServiceException(redmineResponse.get().readEntity(String.class));
             }
         } catch (ProcessingException e) {
-            throw new ServerError(e);
+            throw new BackendServiceException(e);
         }
     }
 
-    public RedmineUserDetails detailsRedmineSomeUser(final String login) {
+    public RedmineUserDetails detailsRedmineSomeUser(final String login) throws NotFoundException, BackendServiceException {
         WebTarget target = this.restClient.target(this.redmineUrl + "users.json")
                                           .queryParam("name", login)
                                           .queryParam("limit", 1);
@@ -170,16 +172,20 @@ public class RedmineUserService implements UserService {
             if (redmineResponse.get().getStatus() == 200) {
                 RedmineUserDetailsSearchWrapper redmineUsers =
                         redmineResponse.get().readEntity(RedmineUserDetailsSearchWrapper.class);
-                return this.extractUser(login, redmineUsers.matchedUsers());
+                RedmineUserDetails redmineDetails = this.extractUser(login, redmineUsers.matchedUsers());
+                if (redmineDetails == null) {
+                    throw new NotFoundException(login);
+                }
+                return redmineDetails;
             } else {
-                throw new ServerError("bang");
+                throw new BackendServiceException(redmineResponse.get().readEntity(String.class));
             }
         } catch (ProcessingException e) {
-            throw new ServerError(e);
+            throw new BackendServiceException(e);
         }
     }
 
-    public RedmineUserDetails detailsRedmineSomeUser(final long redmineUserId) {
+    public RedmineUserDetails detailsRedmineSomeUser(final long redmineUserId) throws NotFoundException, BackendServiceException {
         WebTarget target = this.restClient.target(this.redmineUrl).path("users").path(redmineUserId + ".json")
                                           .queryParam("include", "groups");
         try (Closeable<Response> redmineResponse =
@@ -191,17 +197,19 @@ public class RedmineUserService implements UserService {
                 return redmineResponse.get()
                                       .readEntity(RedmineUserDetailsCurrentWrapper.class)
                                       .user();
+            } else if (redmineResponse.get().getStatus() == 404) {
+                throw new NotFoundException(redmineUserId);
             } else {
-                throw new ServerError("bang");
+                throw new BackendServiceException(redmineResponse.get().readEntity(String.class));
             }
         } catch (ProcessingException e) {
-            throw new ServerError(e);
+            throw new BackendServiceException(e);
         }
     }
 
     public RedmineUserDetails detailsRedmineCurrentUser(
             final String login,
-            final String password) throws MulticauseError {
+            final String password) throws UnauthorizedException, BackendServiceException {
         WebTarget target = this.restClient.target(this.redmineUrl).path("users/current.json");
         try (Closeable<Response> redmineResponse =
                 closeable(target.request(APPLICATION_JSON)
@@ -211,14 +219,12 @@ public class RedmineUserService implements UserService {
             if (redmineResponse.get().getStatus() == 200) {
                 return redmineResponse.get().readEntity(RedmineUserDetailsCurrentWrapper.class).user();
             } else if (redmineResponse.get().getStatus() == 401) {
-                throw new MulticauseError(asList("Unauthorized"));
+                throw new UnauthorizedException(login);
             } else {
-                List<String> errors = this.extractErrorReport(redmineResponse.get());
-                log.info("Failed to display user: {}", errors);
-                throw new MulticauseError(errors);
+                throw new BackendServiceException(redmineResponse.get().readEntity(String.class));
             }
         } catch (ProcessingException e) {
-            throw new ServerError(e);
+            throw new BackendServiceException(e);
         }
     }
 

@@ -1,6 +1,7 @@
 
 package cz.muni.fi.pv243.spatialtracker;
 
+import cz.muni.fi.pv243.spatialtracker.common.ErrorReport;
 import static java.util.stream.Collectors.toList;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
