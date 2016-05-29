@@ -19,6 +19,11 @@ var ngCompareTo = function() {
  
 spatialTrackerApp.directive("ngCompareTo", ngCompareTo);
 spatialTrackerApp.filter('reverse', function() { return function(items) { return items.slice().reverse(); }; });
+spatialTrackerApp.filter('optionTitle', function() { return function(value, options) {
+    var option = options.filter(function (option) { return option.value === value; })[0];
+    
+    return option ? option.title : null;
+}; });
 
 spatialTrackerApp.config(['$routeProvider',
     function($routeProvider) {
