@@ -25,7 +25,8 @@ public class ConfigLoader {
         try (InputStream redmineFile = this.getClass().getResourceAsStream("/redmine.json")) {
             RedmineConfigJson redmine = this.json.readValue(redmineFile, RedmineConfigJson.class);
             this.config.redmineApiKey(redmine.apiKey());
-            this.config.redmineBaseUrl(redmine.baseUrl());
+            this.config.redmineHost(redmine.host());
+            this.config.redminePort(redmine.port());
             this.config.projectId(redmine.projectId());
             this.config.trackerId(redmine.trackerId());
             log.info("New Config: {}", this.config);

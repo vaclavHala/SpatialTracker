@@ -13,8 +13,11 @@ public class RedmineConfigJson {
     @JsonProperty("api_key")
     private String apiKey;
 
-    @JsonProperty("base_url")
-    private String baseUrl;
+    @JsonProperty("host")
+    private String host;
+
+    @JsonProperty("port")
+    private int port;
 
     @JsonProperty("integration_project_id")
     private int projectId;
