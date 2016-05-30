@@ -2,6 +2,7 @@ package cz.muni.fi.pv243.spatialtracker.issues.redmine;
 
 import cz.muni.fi.pv243.spatialtracker.issues.redmine.filter.RedmineFilterComposer;
 import cz.muni.fi.pv243.spatialtracker.SpatialTracker;
+import cz.muni.fi.pv243.spatialtracker.common.EnumMapper;
 import cz.muni.fi.pv243.spatialtracker.config.Config;
 import cz.muni.fi.pv243.spatialtracker.issues.IssueCategory;
 import static cz.muni.fi.pv243.spatialtracker.issues.IssueCategory.ADD;
@@ -41,6 +42,7 @@ public class RedmineFilterComposerTest {
            .addPackages(false,
                         RedmineFilterComposer.class.getPackage(),
                         IssueFilter.class.getPackage(),
+                        EnumMapper.class.getPackage(),
                         Config.class.getPackage(),
                         SpatialTracker.class.getPackage())
            .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")

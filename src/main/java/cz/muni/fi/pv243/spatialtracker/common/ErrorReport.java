@@ -1,5 +1,5 @@
 
-package cz.muni.fi.pv243.spatialtracker;
+package cz.muni.fi.pv243.spatialtracker.common;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;

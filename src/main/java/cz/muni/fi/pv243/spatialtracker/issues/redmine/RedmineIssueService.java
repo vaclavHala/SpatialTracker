@@ -1,12 +1,15 @@
 package cz.muni.fi.pv243.spatialtracker.issues.redmine;
 
-import cz.muni.fi.pv243.spatialtracker.*;
-import static cz.muni.fi.pv243.spatialtracker.Closeable.closeable;
+import cz.muni.fi.pv243.spatialtracker.common.Closeable;
+import cz.muni.fi.pv243.spatialtracker.common.redmine.RedmineErrorReport;
+import cz.muni.fi.pv243.spatialtracker.common.redmine.CustomField;
+import static cz.muni.fi.pv243.spatialtracker.common.Closeable.closeable;
 import cz.muni.fi.pv243.spatialtracker.common.BackendServiceException;
 import cz.muni.fi.pv243.spatialtracker.common.IllegalOperationException;
 import cz.muni.fi.pv243.spatialtracker.common.InvalidInputException;
 import cz.muni.fi.pv243.spatialtracker.common.NotFoundException;
 import cz.muni.fi.pv243.spatialtracker.common.UnauthorizedException;
+import cz.muni.fi.pv243.spatialtracker.common.redmine.CustomFieldsException;
 import cz.muni.fi.pv243.spatialtracker.config.Property;
 import static cz.muni.fi.pv243.spatialtracker.config.PropertyType.INTEGRATION_PROJECT_ID;
 import static cz.muni.fi.pv243.spatialtracker.config.PropertyType.REDMINE_API_KEY;
@@ -15,6 +18,7 @@ import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueCreate;
 import cz.muni.fi.pv243.spatialtracker.issues.redmine.dto.RedmineIssueCreate;
 import cz.muni.fi.pv243.spatialtracker.issues.IssueService;
 import cz.muni.fi.pv243.spatialtracker.issues.IssueStatus;
+import cz.muni.fi.pv243.spatialtracker.issues.IssueStatusUpdateEvent;
 import cz.muni.fi.pv243.spatialtracker.issues.dto.Coordinates;
 import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueDetailsBrief;
 import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueDetailsFull;
@@ -25,11 +29,10 @@ import cz.muni.fi.pv243.spatialtracker.users.redmine.RedmineUserService;
 import cz.muni.fi.pv243.spatialtracker.users.redmine.dto.RedmineUserDetails;
 import static java.lang.String.format;
 import java.util.ArrayList;
-import static java.util.Collections.emptyList;
 import java.util.List;
-import java.util.Optional;
 import static java.util.stream.Collectors.toList;
 import javax.ejb.Stateless;
+import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.client.Client;
@@ -40,8 +43,6 @@ import javax.ws.rs.core.Response;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Stateless
-@Path("/issue")
 public class RedmineIssueService implements IssueService {
 
     private static long SPATIAL_PROJECT_ID = 4;
@@ -60,6 +61,9 @@ public class RedmineIssueService implements IssueService {
 
     @Inject
     private Client restClient;
+
+    @Inject
+    private Event<IssueStatusUpdateEvent> statusUpdateEvent;
 
     @Inject
     private RedmineUserService userService;
@@ -120,12 +124,32 @@ public class RedmineIssueService implements IssueService {
         }
     }
 
+    /**
+     * The update has three phases.
+     * <ul>
+     * <li>First we lookup the issue to be updated
+     *    (If it is not found or if its current status can not be updated to
+     *    the requested, we simply return with error and end)</li>
+     * <li>Second the PUT is sent to Redmine, if 200 is not returned
+     *    the update failed an we return error and end</li>
+     * <li>Lastly the issue is fetched again and it is verified if the issue
+     *    is in expected state (i.e. it has the new requested status)</li>
+     * </ul>
+     * It is done this way to catch all potential races if multiple users try
+     * to update the issue at the same time.
+     */
     @Override
     public void updateIssueState(final long issueId, final IssueStatus newStatus) throws UnauthorizedException,
                                                                                  NotFoundException,
                                                                                  IllegalOperationException,
                                                                                  BackendServiceException {
         log.info("Reguest to update status of issue #{} to {}", issueId, newStatus);
+        RedmineIssueDetails initialIssue = this.redmineDetailFor(issueId);
+        IssueStatus initialStatus = this.statusMapper.fromId(initialIssue.status().id());
+        if (!initialStatus.canTransitionTo(newStatus)) {
+            throw new IllegalOperationException(initialStatus + " -> " + newStatus);
+        }
+
         RedmineIssueUpdateStatus redmineUpdate =
                 new RedmineIssueUpdateStatus(this.statusMapper.toId(newStatus));
         WebTarget target = this.restClient.target(this.redmineUrl).path("issues").path(issueId + ".json");
@@ -145,50 +169,40 @@ public class RedmineIssueService implements IssueService {
             throw new BackendServiceException(e);
         }
         //Redmine responds with OK even if nothing changed, we need to check manually
-        IssueDetailsFull updatedDetails = this.detailsFor(issueId);
-        if (updatedDetails.status().equals(newStatus)) {
+        RedmineIssueDetails updatedIssue = this.redmineDetailFor(issueId);
+        IssueStatus updatedStatus = this.statusMapper.fromId(updatedIssue.status().id());
+        if (updatedStatus.equals(newStatus)) {
             log.info("Status of issue #{} was updated to {}", issueId, newStatus);
-            return;
+            IssueStatusUpdateEvent event = new IssueStatusUpdateEvent(issueId, initialStatus, newStatus);
+            this.statusUpdateEvent.fire(event);
         } else {
             log.info("Illegal state transition of issue #{}, wanted {} -> {}",
-                     issueId, updatedDetails.status(), newStatus);
-            throw new IllegalOperationException(newStatus.name());
+                     issueId, updatedStatus, newStatus);
+            throw new IllegalOperationException(updatedStatus + " -> " + newStatus);
         }
     }
 
     @Override
     public IssueDetailsFull detailsFor(long issueId) throws NotFoundException, BackendServiceException {
         log.info("Full details for issue #{}", issueId);
-        String issueUrl = format("%s/issues/%d.json", this.redmineUrl, issueId);
-        WebTarget target = this.restClient.target(issueUrl);
-        try (Closeable<Response> redmineResponse =
-                closeable(target.request(APPLICATION_JSON)
-                                .buildGet()
-                                .invoke())) {
-            if (redmineResponse.get().getStatus() == 200) {
-                log.info("Issue #{} was found in Redmine", issueId);
-
-                RedmineIssueDetails redmineIssueDetails =
-                        redmineResponse.get().readEntity(RedmineIssueDetailsSingleWrapper.class).issue();
-                RedmineUserDetails redmineUserdetails =
-                        this.userService.detailsRedmineSomeUser(redmineIssueDetails.author().id());
-                log.debug("Issue #{}: {}", issueId, redmineIssueDetails);
-                return new IssueDetailsFull(redmineIssueDetails.subject(),
-                                            redmineIssueDetails.description(),
-                                            this.statusMapper.fromId(redmineIssueDetails.status().id()),
-                                            this.priorityMapper.fromId(redmineIssueDetails.priority().id()),
-                                            this.categoryMapper.fromId(redmineIssueDetails.category().id()),
-                                            redmineIssueDetails.startedDate(),
-                                            redmineUserdetails.login(),
-                                            this.coordsMapper.readFrom(redmineIssueDetails.customFields()));
-            } else if (redmineResponse.get().getStatus() == 404) {
-                throw new NotFoundException(issueId);
-            } else {
-                throw new BackendServiceException(redmineResponse.get().readEntity(String.class));
-            }
-        } catch (ProcessingException e) {
+        RedmineIssueDetails redmineDetails = this.redmineDetailFor(issueId);
+        RedmineUserDetails redmineUserdetails =
+                this.userService.detailsRedmineSomeUser(redmineDetails.author().id());
+        log.debug("Issue #{}: {}", issueId, redmineDetails);
+        Coordinates coords;
+        try {
+            coords = this.coordsMapper.readFrom(redmineDetails.customFields());
+        } catch (CustomFieldsException e) {
             throw new BackendServiceException(e);
         }
+        return new IssueDetailsFull(redmineDetails.subject(),
+                                    redmineDetails.description(),
+                                    this.statusMapper.fromId(redmineDetails.status().id()),
+                                    this.priorityMapper.fromId(redmineDetails.priority().id()),
+                                    this.categoryMapper.fromId(redmineDetails.category().id()),
+                                    redmineDetails.startedDate(),
+                                    redmineUserdetails.login(),
+                                    coords);
     }
 
     @Override
@@ -198,11 +212,38 @@ public class RedmineIssueService implements IssueService {
 
         return this.getAllIssuesFor(redmineQueryFilter).stream()
                    .map((RedmineIssueDetails redmineIssue) -> {
-                       Coordinates coords = this.coordsMapper.readFrom(redmineIssue.customFields());
+                       Coordinates coords;
+                       try {
+                           coords = this.coordsMapper.readFrom(redmineIssue.customFields());
+                       } catch (CustomFieldsException e) {
+                           log.error("Received issue without valid coords: {}", redmineIssue);
+                           return null;
+                       }
                        return new IssueDetailsBrief(redmineIssue.id(),
                                                     redmineIssue.subject(),
                                                     coords);
-                   }).collect(toList());
+                   })
+                   .filter(x -> x != null) //filter out issues with invalid coords
+                   .collect(toList());
+    }
+
+    private RedmineIssueDetails redmineDetailFor(final long issueId) throws NotFoundException, BackendServiceException {
+        String issueUrl = format("%s/issues/%d.json", this.redmineUrl, issueId);
+        WebTarget target = this.restClient.target(issueUrl);
+        try (Closeable<Response> redmineResponse =
+                closeable(target.request(APPLICATION_JSON)
+                                .buildGet()
+                                .invoke())) {
+            if (redmineResponse.get().getStatus() == 200) {
+                return redmineResponse.get().readEntity(RedmineIssueDetailsSingleWrapper.class).issue();
+            } else if (redmineResponse.get().getStatus() == 404) {
+                throw new NotFoundException(issueId);
+            } else {
+                throw new BackendServiceException(redmineResponse.get().readEntity(String.class));
+            }
+        } catch (ProcessingException e) {
+            throw new BackendServiceException(e);
+        }
     }
 
     /**

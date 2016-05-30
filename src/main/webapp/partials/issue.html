@@ -1,10 +1,46 @@
 <h2>Issue</h2>
+<div ng-include="'partials/formMessage.html'"></div>
 <div class="row">
     <div class="col-md-6">
         <table class="table table-striped">
-            <tr ng-repeat="key in ['subject', 'description', 'status', 'priority', 'category', 'started', 'author', 'coords']">
-                <th>{{ key }}</th>
-                <th>{{ issue[key] }}</th>
+            <tr>
+                <th>Subject</th>
+                <td>{{ issue.subject }}</td>
+            </tr>
+            <tr>
+                <th>Description</th>
+                <td>{{ issue.description }}</td>
+            </tr>
+            <tr>
+                <th>Status</th>
+                <td>
+                    {{ issue.status|optionTitle:statusOptions }}
+                    <span ng-show="loggedUser.memberships.indexOf('WORKER') !== -1">
+                        <a href="javascript:;" ng-show="issue.status === 'REPORTED'" ng-click="updateStatus('ACCEPTED')"><span class="glyphicon glyphicon-ok"></span> Accept</a>
+                        <a href="javascript:;" ng-show="issue.status === 'REPORTED'" ng-click="updateStatus('REJECTED')"><span class="glyphicon glyphicon-remove"></span> Reject</a>
+                        <a href="javascript:;" ng-show="issue.status === 'ACCEPTED'" ng-click="updateStatus('FIXED')"><span class="glyphicon glyphicon-wrench"></span> Fixed</a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <th>Priority</th>
+                <td>{{ issue.priority|optionTitle:priorityOptions }}</td>
+            </tr>
+            <tr>
+                <th>Category</th>
+                <td>{{ issue.category|optionTitle:categoryOptions }}</td>
+            </tr>
+            <tr>
+                <th>Started</th>
+                <td>{{ issue.started }}</td>
+            </tr>
+            <tr>
+                <th>Author</th>
+                <td>{{ issue.author }}</td>
+            </tr>
+            <tr>
+                <th>Coordinates</th>
+                <td>{{ issue.coords.lat }}, {{ issue.coords.lon }}</td>
             </tr>
         </table>
     </div>

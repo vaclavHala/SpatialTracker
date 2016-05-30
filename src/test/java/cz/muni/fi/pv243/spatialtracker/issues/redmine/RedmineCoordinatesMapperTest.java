@@ -1,6 +1,6 @@
 package cz.muni.fi.pv243.spatialtracker.issues.redmine;
 
-import cz.muni.fi.pv243.spatialtracker.CustomField;
+import cz.muni.fi.pv243.spatialtracker.common.redmine.CustomField;
 import cz.muni.fi.pv243.spatialtracker.issues.dto.Coordinates;
 import static cz.muni.fi.pv243.spatialtracker.issues.redmine.RedmineCoordinatesMapper.LATITUDE;
 import static cz.muni.fi.pv243.spatialtracker.issues.redmine.RedmineCoordinatesMapper.LONGITUDE;

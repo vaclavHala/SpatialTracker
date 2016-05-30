@@ -1,5 +1,6 @@
 {
-    "base_url" : "http://127.0.0.1:3000/",
+    "host" : "http://127.0.0.1",
+    "port" : 3000,
     "api_key" : "264acfed33b8af628991dda4de64d75390854d82",
     "integration_project_id" : 4,
     "integration_tracker_id" : 1
