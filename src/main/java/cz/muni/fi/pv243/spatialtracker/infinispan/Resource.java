@@ -10,6 +10,9 @@ import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueDetailsBrief;
 import cz.muni.fi.pv243.spatialtracker.issues.filter.CategoryFilter;
 import cz.muni.fi.pv243.spatialtracker.issues.filter.IssueFilter;
 import cz.muni.fi.pv243.spatialtracker.issues.filter.PriorityFilter;
+import cz.muni.fi.pv243.spatialtracker.webchat.model.WebChatMessage;
+import cz.muni.fi.pv243.spatialtracker.webchat.store.CacheContainerProvider;
+import cz.muni.fi.pv243.spatialtracker.webchat.store.WebChatMessageStore;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.security.DeclareRoles;
@@ -20,6 +23,7 @@ import javax.inject.Inject;
 import javax.ws.rs.*;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static cz.muni.fi.pv243.spatialtracker.issues.IssueCategory.ADD;
@@ -27,9 +31,6 @@ import static cz.muni.fi.pv243.spatialtracker.issues.IssueCategory.COMPLAINT;
 import static cz.muni.fi.pv243.spatialtracker.issues.IssueCategory.REPAIR;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
-/**
- * @author opontes
- */
 @Slf4j
 @Stateless
 @Consumes(APPLICATION_JSON)
@@ -39,14 +40,16 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @RolesAllowed("USER")
 public class Resource {
     @Inject
-    IssueService issueService;
+    private IssueService issueService;
 
     @Inject
-    IssueResource issueResource;
+    private IssueResource issueResource;
 
     @Inject
-    HeatMapService heatMapService;
+    private HeatMapService heatMapService;
 
+    @Inject
+    private WebChatMessageStore webChatMessageStore;
     @POST
     @PermitAll
     @Path("/heat_map")
@@ -78,7 +81,15 @@ public class Resource {
     @PermitAll
     @Path("/orig")
     public List<IssueDetailsBrief> getFromCache(){
-        heatMapService.addIssuesIntoCache();
+//        heatMapService.addIssuesIntoCache();
         return heatMapService.getIssuesFromCache();
+    }
+
+    @GET
+    @PermitAll
+    @Path("/message")
+    public List<WebChatMessage> createAndGetMessage(){
+        webChatMessageStore.addMessage("prva", new WebChatMessage("meno", "testing", new Date()));
+        return webChatMessageStore.getMessages("prva");
     }
 }
