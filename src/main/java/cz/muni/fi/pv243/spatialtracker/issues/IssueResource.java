@@ -2,7 +2,6 @@ package cz.muni.fi.pv243.spatialtracker.issues;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import cz.muni.fi.pv243.spatialtracker.common.ErrorReport;
 import cz.muni.fi.pv243.spatialtracker.common.BackendServiceException;
 import cz.muni.fi.pv243.spatialtracker.common.IllegalOperationException;
 import cz.muni.fi.pv243.spatialtracker.common.InvalidInputException;
@@ -17,13 +16,13 @@ import java.io.IOException;
 import java.net.URI;
 import static java.util.Arrays.asList;
 import java.util.List;
-import java.util.Optional;
 import javax.annotation.Resource;
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.ejb.EJBContext;
 import javax.ejb.Stateless;
+import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -32,6 +31,8 @@ import javax.ws.rs.core.Context;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+
+import cz.muni.fi.pv243.spatialtracker.issues.jms.IssueStatusUpdatedEvent;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -53,6 +54,9 @@ public class IssueResource {
 
     @Inject
     private ObjectMapper json;
+
+    @Inject
+    private Event<IssueStatusUpdatedEvent> issueUpdatedEvent;
 
     @POST
     @RolesAllowed({"USER", "WORKER"})
@@ -78,6 +82,8 @@ public class IssueResource {
                  forId, statusUpdate.status());
         this.issueService.updateIssueState(forId, statusUpdate.status());
         log.info("Issue status was updated in Redmine");
+        issueUpdatedEvent.fire(new IssueStatusUpdatedEvent(forId, statusUpdate.status()));
+        log.info("Fired issue updated event.");
         return Response.status(204).build();
     }
 
