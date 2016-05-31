@@ -11,7 +11,7 @@ import javax.jms.Queue;
 @Stateless
 public class IssueStatusUpdatedJms {
 
-    private static final String QUEUE_NAME = "IssueStatusUpdatedQueue";
+    public static String QUEUE_NAME = "IssueStatusUpdatedQueue";
 
     @Inject
     private JMSContext context;
