@@ -42,7 +42,7 @@ public class WebChatMessageStore {
 		return messages;
 	}
 
-	private BasicCache<String, Object> getMessagesCache() {
+	BasicCache<String, Object> getMessagesCache() {
 		return cacheProvider.getCacheContainer().getCache(MESSAGES_CACHE_NAME);
 	}
 }
