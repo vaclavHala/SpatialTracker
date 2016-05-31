@@ -1,0 +1,12 @@
+1. Create queues
+
+- run
+$WILDFLY_HOME/bin/jboss-cli.sh
+
+- write
+jms-queue add --queue-address=IssueStatusUpdatedQueue --entries=queue/issuesStatusUpdated,java:jboss/exported/jms/queue/issuesStatusUpdated
+jms-queue add --queue-address=TestQueue --entries=queue/test,java:jboss/exported/jms/queue/testQueue
+
+2. Start WildFly with Java EE Full Profile
+
+$WILDFLY_HOME/bin/standalone.sh -c standalone-full.xml
