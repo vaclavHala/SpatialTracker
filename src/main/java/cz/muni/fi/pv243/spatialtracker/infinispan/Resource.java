@@ -1,17 +1,13 @@
 package cz.muni.fi.pv243.spatialtracker.infinispan;
 
-import cz.muni.fi.pv243.spatialtracker.MulticauseError;
 import cz.muni.fi.pv243.spatialtracker.common.BackendServiceException;
 import cz.muni.fi.pv243.spatialtracker.common.InvalidInputException;
-import cz.muni.fi.pv243.spatialtracker.issues.IssueCategory;
 import cz.muni.fi.pv243.spatialtracker.issues.IssueResource;
 import cz.muni.fi.pv243.spatialtracker.issues.IssueService;
 import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueDetailsBrief;
 import cz.muni.fi.pv243.spatialtracker.issues.filter.CategoryFilter;
 import cz.muni.fi.pv243.spatialtracker.issues.filter.IssueFilter;
-import cz.muni.fi.pv243.spatialtracker.issues.filter.PriorityFilter;
 import cz.muni.fi.pv243.spatialtracker.webchat.model.WebChatMessage;
-import cz.muni.fi.pv243.spatialtracker.webchat.store.CacheContainerProvider;
 import cz.muni.fi.pv243.spatialtracker.webchat.store.WebChatMessageStore;
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,9 +22,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static cz.muni.fi.pv243.spatialtracker.issues.IssueCategory.ADD;
-import static cz.muni.fi.pv243.spatialtracker.issues.IssueCategory.COMPLAINT;
-import static cz.muni.fi.pv243.spatialtracker.issues.IssueCategory.REPAIR;
+import static cz.muni.fi.pv243.spatialtracker.issues.IssueCategory.*;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
 @Slf4j
@@ -53,7 +47,7 @@ public class Resource {
     @POST
     @PermitAll
     @Path("/heat_map")
-    public void createHeatMap(final @QueryParam("filter") String rawFilter) throws MulticauseError {
+    public void createHeatMap(final @QueryParam("filter") String rawFilter) {
         try {
             List<IssueDetailsBrief> issues = issueService.searchFiltered(issueResource.getFilters(rawFilter));
         } catch (InvalidInputException e) {

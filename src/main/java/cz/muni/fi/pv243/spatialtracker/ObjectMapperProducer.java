@@ -9,6 +9,6 @@ import javax.enterprise.inject.Produces;
 public class ObjectMapperProducer {
 
     @Produces
-    private ObjectMapper mapper = new ObjectMapper();
+    private ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
 
 }

@@ -127,7 +127,8 @@ spatialTrackerControllers.controller('IssueController', ['$scope', '$http',
                 { '@type': 'category', 'in': [], isEmpty: function () { return this.in.length === 0; } },
                 { '@type': 'status', 'in': [], isEmpty: function () { return this.in.length === 0; } },
                 { '@type': 'priority', isEmpty: function () { return !this.min || !this.max; } },
-                { '@type': 'spatial', isEmpty: function () { return isNaN(parseFloat(this.lat_min)) || isNaN(parseFloat(this.lat_max)) || isNaN(parseFloat(this.lon_min)) || isNaN(parseFloat(this.lon_max)); } }
+                { '@type': 'spatial', isEmpty: function () { return isNaN(parseFloat(this.lat_min)) || isNaN(parseFloat(this.lat_max)) || isNaN(parseFloat(this.lon_min)) || isNaN(parseFloat(this.lon_max)); } },
+                { '@type': 'date', isEmpty: function () { return !this.from || !this.to; } }
             ];
             
             $('select[multiple].select2-hidden-accessible').select2('destroy');
