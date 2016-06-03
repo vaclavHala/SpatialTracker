@@ -24,12 +24,13 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 
 @RunWith(Arquillian.class)
-public class WebChatMessageStoreTest {
+public class CacheWebChatMessageStoreTest {
 
     @Deployment
     public static WebArchive createDeployment() {
         return ShrinkWrap.create(WebArchive.class)
-                .addClasses(TestCacheContainerProvider.class, WebChatMessageStore.class, CacheContainerProvider.class)
+                .addClasses(TestCacheContainerProvider.class, WebChatMessageStore.class,
+                        CacheWebChatMessageStore.class, CacheContainerProvider.class)
                 .addPackages(false, WebChatService.class.getPackage(), NewWebChatMessage.class.getPackage())
                 .addAsLibraries(Maven.resolver()
                         .resolve("org.infinispan:infinispan-core:8.2.2.Final")
@@ -38,7 +39,7 @@ public class WebChatMessageStoreTest {
     }
 
     @Inject
-    private WebChatMessageStore store;
+    private CacheWebChatMessageStore store;
 
     @Inject
     private TestCacheContainerProvider cacheProvider;
