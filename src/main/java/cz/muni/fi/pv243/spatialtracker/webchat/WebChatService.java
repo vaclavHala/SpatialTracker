@@ -1,5 +1,6 @@
 package cz.muni.fi.pv243.spatialtracker.webchat;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -33,7 +34,11 @@ public class WebChatService {
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	public List<WebChatMessage> getMessages(@PathParam("room") String roomName) {
-		return messages.getMessages(roomName);
+		List<WebChatMessage> list =  messages.getMessages(roomName);
+		if (list == null) {
+			return Collections.emptyList();
+		}
+		return list;
 	}
 
 	@POST
