@@ -30,8 +30,8 @@ public class CacheWebChatMessageStoreTest {
     @Deployment
     public static WebArchive createDeployment() {
         return ShrinkWrap.create(WebArchive.class)
-                .addClasses(TestCacheContainerProvider.class, WebChatMessageStore.class,
-                        CacheWebChatMessageStore.class, CacheContainerProvider.class)
+                .addClasses(CacheProvider.class, WebChatMessageStore.class,
+                        CacheWebChatMessageStore.class)
                 .addPackages(false, WebChatService.class.getPackage(), NewWebChatMessage.class.getPackage())
                 .addAsLibraries(Maven.resolver()
                         .resolve("org.infinispan:infinispan-core:8.2.2.Final")
