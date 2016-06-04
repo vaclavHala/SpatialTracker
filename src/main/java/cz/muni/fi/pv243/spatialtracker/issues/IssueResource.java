@@ -1,3 +1,4 @@
+
 package cz.muni.fi.pv243.spatialtracker.issues;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -12,9 +13,12 @@ import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueDetailsBrief;
 import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueDetailsFull;
 import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueUpdateStatus;
 import cz.muni.fi.pv243.spatialtracker.issues.filter.IssueFilter;
+
 import java.io.IOException;
 import java.net.URI;
+
 import static java.util.Arrays.asList;
+
 import java.util.List;
 import javax.annotation.Resource;
 import javax.annotation.security.DeclareRoles;
@@ -28,7 +32,9 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
+
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
@@ -44,7 +50,8 @@ import lombok.extern.slf4j.Slf4j;
 public class IssueResource {
 
     private static final TypeReference<List<IssueFilter>> ISSUE_FILTERS_LIST_TOKEN =
-            new TypeReference<List<IssueFilter>>() {};
+            new TypeReference<List<IssueFilter>>() {
+            };
 
     @Resource
     private EJBContext ctx;
@@ -67,7 +74,7 @@ public class IssueResource {
         log.info("New issue report from user {}: {}", user, issue);
         long newIssueResourceId = this.issueService.report(issue, user);
         URI newIssueResourcePath = userApiLocation.getAbsolutePathBuilder()
-                                                  .path(String.valueOf(newIssueResourceId)).build();
+                .path(String.valueOf(newIssueResourceId)).build();
         log.info("Issue was created at {}", newIssueResourcePath);
         return Response.created(newIssueResourcePath).build();
     }
@@ -79,7 +86,9 @@ public class IssueResource {
             final @NotNull @Valid IssueUpdateStatus statusUpdate,
             final @PathParam("id") long forId) throws UnauthorizedException, NotFoundException, IllegalOperationException, BackendServiceException {
         log.info("Request to update status of isue #{} to {}",
-                 forId, statusUpdate.status());
+
+
+                forId, statusUpdate.status());
         this.issueService.updateIssueState(forId, statusUpdate.status());
         log.info("Issue status was updated in Redmine");
         issueUpdatedEvent.fire(new IssueStatusUpdatedEvent(forId, statusUpdate.status()));
@@ -101,7 +110,8 @@ public class IssueResource {
 
     /**
      * Example filter: {@code [{"@type":"category","in":["ADD","REMOVE"]},
-     *                         {"@type":"spatial","lat_min":1.0,"lat_max":10.0,"lon_min":2.0,"lon_max":12.0}]}
+     * {"@type":"spatial","lat_min":1.0,"lat_max":10.0,"lon_min":2.0,"lon_max":12.0}]}
+     *
      * @param rawFilter contains JSON string describing the query.
      *                  Its structure is {@code filter=[{filter_1},{filter_2},...]},
      *                  where {@code filter_n} is a JSON object describing single specific search criterion.
@@ -115,7 +125,7 @@ public class IssueResource {
             final @QueryParam("filter") String rawFilter) throws InvalidInputException, BackendServiceException {
         List<IssueFilter> filters;
         try {
-            filters = this.json.readValue(rawFilter, ISSUE_FILTERS_LIST_TOKEN);
+            filters = getFilters(rawFilter);
         } catch (IOException e) {
             log.warn("Trying to search for issues using invalid filter: {}", rawFilter, e);
             throw new InvalidInputException(asList("Malformed issue filter"));
@@ -124,5 +134,9 @@ public class IssueResource {
         List<IssueDetailsBrief> foundIssues = this.issueService.searchFiltered(filters);
         log.debug("Found {} issues: {}", foundIssues.size(), foundIssues);
         return Response.ok(foundIssues).build();
+    }
+
+    public List<IssueFilter> getFilters(String rawFilter) throws IOException {
+        return this.json.readValue(rawFilter, ISSUE_FILTERS_LIST_TOKEN);
     }
 }

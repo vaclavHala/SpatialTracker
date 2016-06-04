@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>toy</groupId>
@@ -13,7 +14,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <infinispan.version>7.1.0.Final</infinispan.version>
+        <infinispan.version>8.2.2.Final</infinispan.version>
     </properties>
 
     <dependencyManagement>
@@ -29,10 +30,24 @@
     </dependencyManagement>
 
     <dependencies>
+        <!--&lt;!&ndash; Infinispan &ndash;&gt;-->
+        <!--<dependency>-->
+            <!--<groupId>org.infinispan</groupId>-->
+            <!--<artifactId>infinispan-embedded</artifactId>-->
+            <!--<version>${infinispan.version}</version>-->
+        <!--</dependency>-->
+
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-commons</artifactId>
+            <version>${infinispan.version}</version>
+            <scope>compile</scope>
+        </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
             <artifactId>infinispan-core</artifactId>
-            <version>8.2.2.Final</version>
+            <version>${infinispan.version}</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.picketbox</groupId>

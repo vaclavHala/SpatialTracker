@@ -7,6 +7,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
+import java.io.Serializable;
+
 /**
  * For showing issues on the map.
  * Note that category, priority etc. are not included.
@@ -18,7 +20,7 @@ import lombok.ToString;
 @Getter
 @EqualsAndHashCode
 @AllArgsConstructor
-public class IssueDetailsBrief {
+public class IssueDetailsBrief implements Serializable{
 
     @JsonProperty("id")
     private long id;

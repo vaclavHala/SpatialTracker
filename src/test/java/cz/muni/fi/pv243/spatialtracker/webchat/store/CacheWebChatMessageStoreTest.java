@@ -1,5 +1,6 @@
 package cz.muni.fi.pv243.spatialtracker.webchat.store;
 
+import cz.muni.fi.pv243.spatialtracker.infinispan.CacheProvider;
 import cz.muni.fi.pv243.spatialtracker.webchat.WebChatService;
 
 import static org.junit.Assert.*;
@@ -42,11 +43,11 @@ public class CacheWebChatMessageStoreTest {
     private CacheWebChatMessageStore store;
 
     @Inject
-    private TestCacheContainerProvider cacheProvider;
+    private CacheProvider cacheProvider;
 
     @Before
     public void setUp() {
-        store.getMessagesCache().clear();
+        cacheProvider.getMessageCache().clear();
     }
 
     @Test
