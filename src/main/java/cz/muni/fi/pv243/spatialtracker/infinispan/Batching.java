@@ -51,10 +51,13 @@ class Batching implements Job{
 
     private void addIssuesIntoCache(List<IssueFilter> filters) {
         try {
+            cache.startBatch();
             issueService.searchFiltered(filters)
                     .forEach(issue -> cache.put(Long.toString(issue.id()), issue));
+            cache.endBatch(true);
         } catch (InvalidInputException | BackendServiceException e) {
             e.printStackTrace();
+            cache.endBatch(false);
         }
     }
 }

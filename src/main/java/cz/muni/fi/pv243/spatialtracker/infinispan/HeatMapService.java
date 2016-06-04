@@ -2,41 +2,61 @@ package cz.muni.fi.pv243.spatialtracker.infinispan;
 
 import cz.muni.fi.pv243.spatialtracker.issues.IssueService;
 import cz.muni.fi.pv243.spatialtracker.issues.dto.Coordinates;
+import cz.muni.fi.pv243.spatialtracker.issues.dto.Heat;
 import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueDetailsBrief;
+import cz.muni.fi.pv243.spatialtracker.issues.filter.IssueFilter;
+import cz.muni.fi.pv243.spatialtracker.issues.filter.SpatialFilter;
 import org.infinispan.Cache;
 
-import javax.enterprise.context.ApplicationScoped;
+import javax.ejb.Stateless;
 import javax.inject.Inject;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-@ApplicationScoped
+import static java.lang.Math.round;
+import static java.lang.Math.toIntExact;
+
+@Stateless
 public class HeatMapService {
-    private Cache<String, IssueDetailsBrief> cache;
-
-    @Inject
-    private IssueService issueService;
+    private double latitude;
+    private double longitude;
 
     @Inject
     private CacheProvider cacheProvider;
 
-    private void initializeCache(){
-        cache = cacheProvider.getIssueCache();
-    }
+    public List<Heat> getHeatMapOfAllIssues(List<IssueFilter> filters) {
+        List<Heat> result = new ArrayList<>();
+        Map<String, Heat> help = new HashMap<>();
 
-    public void addIssuesIntoCache(){
-        if(cache == null) initializeCache();
-        List<IssueDetailsBrief> issues = new ArrayList<>();
-        for(int i = 0; i < 1000; i++){
-            issues.add(new IssueDetailsBrief(i, "TestIssue" + i, new Coordinates((long) 49.2000+i*10, (long) 16.5940+i*10)));
-        }
-        issues.forEach(issue -> cache.put(Long.toString(issue.id()), issue));
-    }
+        SpatialFilter filter;
 
-    public List<IssueDetailsBrief> getIssuesFromCache(){
-        if(cache == null) initializeCache();
-        List<IssueDetailsBrief> result = new ArrayList<>();
-        cache.values().stream().forEach(x -> result.add(x));
+        filter = (SpatialFilter) filters.stream().filter(x -> x instanceof SpatialFilter).findFirst().get();
+
+        latitude = (filter.latMax() - filter.latMin()) / 100;
+        longitude = (filter.lonMin() - filter.lonMax()) / 100;
+
+        cacheProvider.getIssueCache().values().stream().filter(issue ->
+                issue.coords().latitude() <= filter.latMax() &&
+                        issue.coords().latitude() >= filter.latMin() &&
+                        issue.coords().longitude() >= filter.lonMax() &&
+                        issue.coords().longitude() <= filter.lonMin())
+                .forEach(issue -> {
+                    int x = toIntExact(round((issue.coords().longitude() - filter.lonMax()) / longitude));
+                    int y = toIntExact(round((filter.latMax() - issue.coords().latitude()) / latitude));
+                    Heat h = help.get(x + ", " + y);
+                    if (h == null) {
+                        h = new Heat(
+                                new Coordinates(filter.lonMax() + longitude * x, filter.latMax() - latitude * y),
+                                new Coordinates(filter.lonMax() + longitude * x + 1, filter.latMax() - latitude * y + 1),
+                                1);
+                        help.put(x + ", " + y, h);
+                    } else {
+                        h.value(h.value() + 1);
+                    }
+                });
+        help.forEach((k, v) -> result.add(v));
         return result;
     }
 }
