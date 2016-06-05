@@ -1,15 +1,14 @@
 package cz.muni.fi.pv243.spatialtracker.infinispan;
 
-import cz.muni.fi.pv243.spatialtracker.issues.IssueService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import cz.muni.fi.pv243.spatialtracker.issues.IssueResource;
 import cz.muni.fi.pv243.spatialtracker.issues.dto.Coordinates;
 import cz.muni.fi.pv243.spatialtracker.issues.dto.Heat;
-import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueDetailsBrief;
-import cz.muni.fi.pv243.spatialtracker.issues.filter.IssueFilter;
 import cz.muni.fi.pv243.spatialtracker.issues.filter.SpatialFilter;
-import org.infinispan.Cache;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,13 +25,18 @@ public class HeatMapService {
     @Inject
     private CacheProvider cacheProvider;
 
-    public List<Heat> getHeatMapOfAllIssues(List<IssueFilter> filters) {
+    @Inject
+    private IssueResource issueResource;
+
+    @Inject
+    private ObjectMapper json;
+
+    public List<Heat> getHeatMapOfAllIssues(String rawFilter) throws IOException {
         List<Heat> result = new ArrayList<>();
         Map<String, Heat> help = new HashMap<>();
 
-        SpatialFilter filter;
-
-        filter = (SpatialFilter) filters.stream().filter(x -> x instanceof SpatialFilter).findFirst().get();
+        SpatialFilter filter = json.readValue(rawFilter, SpatialFilter.class);
+        if(filter == null) return null;
 
         latitude = (filter.latMax() - filter.latMin()) / 100;
         longitude = (filter.lonMin() - filter.lonMax()) / 100;
@@ -40,8 +44,8 @@ public class HeatMapService {
         cacheProvider.getIssueCache().values().stream().filter(issue ->
                 issue.coords().latitude() <= filter.latMax() &&
                         issue.coords().latitude() >= filter.latMin() &&
-                        issue.coords().longitude() >= filter.lonMax() &&
-                        issue.coords().longitude() <= filter.lonMin())
+                        issue.coords().longitude() <= filter.lonMax() &&
+                        issue.coords().longitude() >= filter.lonMin())
                 .forEach(issue -> {
                     int x = toIntExact(round((issue.coords().longitude() - filter.lonMax()) / longitude));
                     int y = toIntExact(round((filter.latMax() - issue.coords().latitude()) / latitude));
