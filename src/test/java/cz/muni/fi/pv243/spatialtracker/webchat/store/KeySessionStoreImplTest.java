@@ -9,11 +9,11 @@ import javax.websocket.Session;
 
 import org.junit.Test;
 
-public class KeySessionStoreTest {
+public class KeySessionStoreImplTest {
 
 	@Test
 	public void addSessionTest() {
-		KeySessionStore store = new KeySessionStore();
+		KeySessionStore store = new KeySessionStoreImpl();
 
 		addSampleKeySessions(store);
 
@@ -22,7 +22,7 @@ public class KeySessionStoreTest {
 
 	@Test
 	public void getSessionsTest() {
-		KeySessionStore store = new KeySessionStore();
+		KeySessionStore store = new KeySessionStoreImpl();
 
 		List<Session> sessions = store.getSessions("sampleKey");
 
@@ -31,7 +31,7 @@ public class KeySessionStoreTest {
 
 	@Test
 	public void addSessionsWithDifferentKeyTest() {
-		KeySessionStore store = new KeySessionStore();
+		KeySessionStore store = new KeySessionStoreImpl();
 
 		addSampleKeySessions(store);
 		addDifferentKeySessions(store);
