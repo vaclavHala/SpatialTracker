@@ -5,13 +5,10 @@ import cz.muni.fi.pv243.spatialtracker.webchat.model.WebChatMessage;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.infinispan.configuration.global.GlobalConfiguration;
-import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 
 import javax.annotation.PreDestroy;
-import javax.ejb.Stateless;
 import javax.enterprise.context.ApplicationScoped;
 import java.util.List;
 
