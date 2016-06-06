@@ -1,6 +1,8 @@
 package cz.muni.fi.pv243.spatialtracker.webchat.store;
 
 import cz.muni.fi.pv243.spatialtracker.infinispan.CacheProvider;
+import cz.muni.fi.pv243.spatialtracker.issues.dto.Coordinates;
+import cz.muni.fi.pv243.spatialtracker.issues.dto.IssueDetailsBrief;
 import cz.muni.fi.pv243.spatialtracker.webchat.WebChatService;
 
 import static org.junit.Assert.*;
@@ -30,8 +32,8 @@ public class CacheWebChatMessageStoreTest {
     @Deployment
     public static WebArchive createDeployment() {
         return ShrinkWrap.create(WebArchive.class)
-                .addClasses(CacheProvider.class, WebChatMessageStore.class,
-                        CacheWebChatMessageStore.class)
+                .addClasses(TestMessagesCacheProvider.class, CacheProvider.class, WebChatMessageStore.class, CacheWebChatMessageStore.class,
+                        IssueDetailsBrief.class, Coordinates.class)
                 .addPackages(false, WebChatService.class.getPackage(), NewWebChatMessage.class.getPackage())
                 .addAsLibraries(Maven.resolver()
                         .resolve("org.infinispan:infinispan-core:8.2.2.Final")
