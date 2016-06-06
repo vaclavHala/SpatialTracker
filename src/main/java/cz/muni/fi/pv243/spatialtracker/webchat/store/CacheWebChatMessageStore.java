@@ -3,7 +3,6 @@ package cz.muni.fi.pv243.spatialtracker.webchat.store;
 import cz.muni.fi.pv243.spatialtracker.infinispan.CacheProvider;
 import cz.muni.fi.pv243.spatialtracker.webchat.model.WebChatMessage;
 import org.infinispan.Cache;
-import org.infinispan.commons.api.BasicCache;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
