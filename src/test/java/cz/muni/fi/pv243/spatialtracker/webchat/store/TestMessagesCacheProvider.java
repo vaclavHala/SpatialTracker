@@ -35,6 +35,7 @@ public class TestMessagesCacheProvider implements CacheProvider {
     private EmbeddedCacheManager getCacheContainer() {
         if (manager == null) {
             GlobalConfiguration glob = new GlobalConfigurationBuilder()
+                    .globalJmxStatistics().jmxDomain("tests").allowDuplicateDomains(true)
                     .build();
 
             Configuration defaultConfig = new ConfigurationBuilder()
