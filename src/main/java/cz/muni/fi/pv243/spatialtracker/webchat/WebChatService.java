@@ -8,6 +8,8 @@ import javax.annotation.security.RolesAllowed;
 import javax.ejb.Stateless;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
@@ -33,7 +35,7 @@ public class WebChatService {
 
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public List<WebChatMessage> getMessages(@PathParam("room") String roomName) {
+	public List<WebChatMessage> getMessages(@PathParam("room") @NotNull String roomName) {
 		List<WebChatMessage> list =  messages.getMessages(roomName);
 		if (list == null) {
 			return Collections.emptyList();
@@ -43,7 +45,8 @@ public class WebChatService {
 
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
-	public void addMessage(NewWebChatMessage newMessage, @PathParam("room") String roomName, final @HeaderParam(AUTHORIZATION) String currentUserBasicAuth) {
+	public void addMessage(@Valid @NotNull NewWebChatMessage newMessage, @PathParam("room") @NotNull String roomName,
+						   final @HeaderParam(AUTHORIZATION) @NotNull String currentUserBasicAuth) {
         BasicAuthUtils.LoginPass auth = decodeBasicAuthLogin(currentUserBasicAuth);
 		WebChatMessage fullMessage = new WebChatMessage();
 		fullMessage.name(auth.login());
