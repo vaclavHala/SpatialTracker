@@ -227,6 +227,14 @@ spatialTrackerControllers.controller('HeatMapController', ['$scope', '$http',
             zoom: 14
         });
         
+        function floorBounds(number) {
+            return Math.floor(number * 100) / 100;
+        };
+        
+        function ceilBounds(number) {
+            return Math.ceil(number * 100) / 100;
+        }
+        
         $http.get('rest/issue', { params: { filter: JSON.stringify([]) } }).success(function (issues) {
             if (issues.length > 0) {
                 var bounds = getBounds(issues);
@@ -248,7 +256,7 @@ spatialTrackerControllers.controller('HeatMapController', ['$scope', '$http',
         $scope.drawAreas = function () {
             var bounds = map.getBounds();
             
-            $http.get('rest/heat_map', { params: { filter: JSON.stringify({ '@type': 'spatial', lat_min: bounds.getSouthWest().lat(), lon_min: bounds.getSouthWest().lng(), lat_max: bounds.getNorthEast().lat(), lon_max: bounds.getNorthEast().lng() }) } }).success(function (data) {
+            $http.get('rest/heat_map', { params: { filter: JSON.stringify({ '@type': 'spatial', lat_min: floorBounds(bounds.getSouthWest().lat()), lon_min: floorBounds(bounds.getSouthWest().lng()), lat_max: ceilBounds(bounds.getNorthEast().lat()), lon_max: ceilBounds(bounds.getNorthEast().lng()) }) } }).success(function (data) {
                 areas.forEach(function (area) { area.setMap(null); });
                 areas = [];
                 

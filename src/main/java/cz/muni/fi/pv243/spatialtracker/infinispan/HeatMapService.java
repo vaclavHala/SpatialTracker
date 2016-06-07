@@ -1,7 +1,6 @@
 package cz.muni.fi.pv243.spatialtracker.infinispan;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import cz.muni.fi.pv243.spatialtracker.issues.IssueResource;
 import cz.muni.fi.pv243.spatialtracker.issues.dto.Coordinates;
 import cz.muni.fi.pv243.spatialtracker.issues.dto.Heat;
 import cz.muni.fi.pv243.spatialtracker.issues.filter.SpatialFilter;
@@ -14,7 +13,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.lang.Math.round;
 import static java.lang.Math.toIntExact;
 
 @Stateless
@@ -41,8 +39,8 @@ public class HeatMapService {
                         issue.coords().longitude() <= filter.lonMax() &&
                         issue.coords().longitude() >= filter.lonMin())
                 .forEach(issue -> {
-                    int x = toIntExact(round(issue.coords().longitude() * 100));
-                    int y = toIntExact(round(issue.coords().latitude() * 100));
+                    int x = toIntExact((long) Math.floor(issue.coords().longitude() * 100));
+                    int y = toIntExact((long) Math.floor(issue.coords().latitude() * 100));
                     
                     Heat h = help.get(x + ", " + y);
                     

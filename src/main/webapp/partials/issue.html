@@ -15,7 +15,7 @@
                 <th>Status</th>
                 <td>
                     {{ issue.status|optionTitle:statusOptions }}
-                    <span ng-show="loggedUser.memberships.indexOf('WORKER') !== -1">
+                    <span ng-show="loggedUser && loggedUser.memberships.indexOf('WORKER') !== -1">
                         <a href="javascript:;" ng-show="issue.status === 'REPORTED'" ng-click="updateStatus('ACCEPTED')"><span class="glyphicon glyphicon-ok"></span> Accept</a>
                         <a href="javascript:;" ng-show="issue.status === 'REPORTED'" ng-click="updateStatus('REJECTED')"><span class="glyphicon glyphicon-remove"></span> Reject</a>
                         <a href="javascript:;" ng-show="issue.status === 'ACCEPTED'" ng-click="updateStatus('FIXED')"><span class="glyphicon glyphicon-wrench"></span> Fixed</a>
@@ -48,8 +48,8 @@
         <div id="map"></div>
     </div>
 </div>
+<h3>Chat</h3>
 <div ng-show="loggedUser">
-    <h3>Chat</h3>
     <div class="panel panel-default">
         <div class="panel-heading">Post Message</div>
         <div class="panel-body">
@@ -64,10 +64,10 @@
             </form>
         </div>
     </div>
-    <div class="well">
-        <dl id="chat" class="dl-horizontal">
-            <dt ng-repeat-start="message in messages | reverse">{{ message.name }}  <i>{{ message.created }}</i></dt>
-            <dd ng-repeat-end="">{{ message.text }}</dd>
-        </dl>
-    </div>
+</div>
+<div class="well">
+    <dl id="chat" class="dl-horizontal">
+        <dt ng-repeat-start="message in messages | reverse">{{ message.name }}  <i>{{ message.created }}</i></dt>
+        <dd ng-repeat-end="">{{ message.text }}</dd>
+    </dl>
 </div>
