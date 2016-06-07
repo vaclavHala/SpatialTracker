@@ -1,8 +1,14 @@
 -- Redmine via Docker HOWTO --
     Before running the Spatial Tracker itself environment needs to be set up
-    (It is not required to build images for running tests of the project)
-    Redmine and Postgres docker containers need to be built and started
-    Custom Dockerfiles for each are in environment/postgres and environment/redmine
+    For running tests:
+        Docker daemon needs to run and listen on TCP port 2375
+        how to do this - https://github.com/arquillian/arquillian-cube#preliminaries
+        put DOCKER_OPTS="-H tcp://127.0.0.1:2375 -H unix:///var/run/docker.sock"
+        into /etc/default/docker
+    
+    For running the application:
+        Redmine and Postgres docker containers need to be built and started
+        Custom Dockerfiles for each are in environment/postgres and environment/redmine
 
 cd environment/postgres && sudo docker build -t pg-red .
 cd environment/redmine && sudo docker build -t red .
