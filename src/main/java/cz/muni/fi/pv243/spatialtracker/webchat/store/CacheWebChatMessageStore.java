@@ -6,6 +6,7 @@ import org.infinispan.Cache;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -17,13 +18,12 @@ public class CacheWebChatMessageStore implements WebChatMessageStore {
 
 	public void addMessage(String key, WebChatMessage message) {
 		Cache<String, List<WebChatMessage>> messagesCache = cacheProvider.getMessageCache();
-
 		List<WebChatMessage> messages = messagesCache.get(key);
-			if (messages == null) {
-				messages = new LinkedList<>();
-				messagesCache.put(key, messages);
-			}
-			messages.add(message);
+		if (messages == null) {
+			messages = new LinkedList<>();
+		}
+		messages.add(message);
+		messagesCache.put(key, messages);
 	}
 
 	public List<WebChatMessage> getMessages(String key) {
@@ -32,6 +32,6 @@ public class CacheWebChatMessageStore implements WebChatMessageStore {
 		if (messages == null) {
 			return new LinkedList<>();
 		}
-		return messages;
+		return Collections.unmodifiableList(messages);
 	}
 }
