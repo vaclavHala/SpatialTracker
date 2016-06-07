@@ -34,9 +34,7 @@ class Batching implements Job{
 
     private Cache<String, IssueDetailsBrief> cache;
 
-    @Override
-    public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-
+    void execute(){
         cache = cacheProvider.getIssueCache();
         if (cache.values().isEmpty()) {
             addIssuesIntoCache(new ArrayList<IssueFilter>() {{
@@ -47,6 +45,11 @@ class Batching implements Job{
                 add(new DateFilter(LocalDate.now().minusDays(1), LocalDate.now()));
             }});
         }
+    }
+
+    @Override
+    public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+        execute();
     }
 
     private void addIssuesIntoCache(List<IssueFilter> filters) {
