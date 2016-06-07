@@ -40,6 +40,10 @@ spatialTrackerApp.config(['$routeProvider',
                 templateUrl: 'partials/issue.html',
                 controller: 'IssueDetailController'
             })
+            .when('/heat_map', {
+                templateUrl: 'partials/heat_map.html',
+                controller: 'HeatMapController'
+            })
             .when('/logout', {
                 templateUrl: 'partials/register.html',
                 controller: 'LogoutController'

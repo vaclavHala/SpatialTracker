@@ -4,6 +4,22 @@ var categoryOptions = [{ value: 'ADD', title: 'Add' }, { value: 'REMOVE', title:
 var statusOptions = [{ value: 'REPORTED', title: 'Reported' }, { value: 'ACCEPTED', title: 'Accepted'}, { value: 'REJECTED', title: 'Rejected' }, { value: 'FIXED', title: 'Fixed' }];
 var priorityOptions = [{ value: 'WANT_TO_HAVE', title: 'Want to have' }, { value:  'CAN_HAVE', title: 'Can have' }, { value: 'SHOULD_HAVE', title: 'Should have' }, { value: 'MUST_HAVE', title: 'Must have' }];
 
+function getBounds(issues) {
+    var sw = { lat: Number.MAX_SAFE_INTEGER, lon: Number.MAX_SAFE_INTEGER };
+    var ne = { lat: Number.MIN_SAFE_INTEGER, lon: Number.MIN_SAFE_INTEGER };
+
+    for (var i = 0; i < issues.length; i++) {
+        var issue = issues[i];
+        
+        sw.lat = Math.min(issue.coords.lat, sw.lat);
+        sw.lon = Math.min(issue.coords.lon, sw.lon);
+        ne.lat = Math.max(issue.coords.lat, ne.lat);
+        ne.lon = Math.max(issue.coords.lon, ne.lon);
+    }
+    
+    return issues.length > 0 ? new google.maps.LatLngBounds(new google.maps.LatLng(sw.lat, sw.lon), new google.maps.LatLng(ne.lat, ne.lon)) : null;
+};
+
 spatialTrackerControllers.controller('LoginController', ['$scope', '$http', 
     function($scope, $http) {
         $http.get('rest/user/me').success(function(data) {
@@ -135,29 +151,18 @@ spatialTrackerControllers.controller('IssueController', ['$scope', '$http',
             setTimeout(function () { $('select[multiple]').select2(); }, 10);
         };
         $scope.updateMarkers = function () {
-            for (var i = 0; i < markers.length; i++) {
-                markers[i].setMap(null);
-            }
-            
+            markers.forEach(function (marker) { marker.setMap(null); });
             markers = [];
-            
-            var sw = { lat: Number.MAX_SAFE_INTEGER, lon: Number.MAX_SAFE_INTEGER };
-            var ne = { lat: Number.MIN_SAFE_INTEGER, lon: Number.MIN_SAFE_INTEGER };
             
             for (var i = 0; i < $scope.issues.length; i++) {
                 var issue = $scope.issues[i];
                 var marker = new google.maps.Marker({ position: new google.maps.LatLng(issue.coords.lat, issue.coords.lon), map: map, title: issue.subject });
-                
+            
                 markers.push(marker);
-                
-                sw.lat = Math.min(issue.coords.lat, sw.lat);
-                sw.lon = Math.min(issue.coords.lon, sw.lon);
-                ne.lat = Math.max(issue.coords.lat, ne.lat);
-                ne.lon = Math.max(issue.coords.lon, ne.lon);
             }
             
             if (markers.length > 0) {
-                map.fitBounds(new google.maps.LatLngBounds(new google.maps.LatLng(sw.lat, sw.lon), new google.maps.LatLng(ne.lat, ne.lon)));
+                map.fitBounds(getBounds($scope.issues));
             }
         };
         
@@ -210,5 +215,57 @@ spatialTrackerControllers.controller('IssueDetailController', ['$scope', '$http'
         Message.query(function(messages) {
             $scope.messages = messages;
         });
+    }
+]);
+
+spatialTrackerControllers.controller('HeatMapController', ['$scope', '$http', 
+    function($scope, $http) {
+        var areas = [];
+        var map = new google.maps.Map(document.getElementById('heatMap'), {
+            mapTypeId: google.maps.MapTypeId.ROADMAP,
+            center: new google.maps.LatLng(49.1952, 16.6079),
+            zoom: 14
+        });
+        
+        $http.get('rest/issue', { params: { filter: JSON.stringify([]) } }).success(function (issues) {
+            if (issues.length > 0) {
+                var bounds = getBounds(issues);
+
+                map.fitBounds(bounds);
+
+                $scope.drawAreas();
+            }
+        });
+        
+        var timeout;
+        
+        $scope.drawAreasDelayed = function () {
+            clearTimeout(timeout);
+            
+            timeout = setTimeout(function () { $scope.drawAreas(); }, 500);
+        };
+        
+        $scope.drawAreas = function () {
+            var bounds = map.getBounds();
+            
+            $http.get('rest/heat_map', { params: { filter: JSON.stringify({ '@type': 'spatial', lat_min: bounds.getSouthWest().lat(), lon_min: bounds.getSouthWest().lng(), lat_max: bounds.getNorthEast().lat(), lon_max: bounds.getNorthEast().lng() }) } }).success(function (data) {
+                areas.forEach(function (area) { area.setMap(null); });
+                areas = [];
+                
+                data.forEach(function (coords) {
+                    var rectangle = new google.maps.Rectangle({
+                        strokeWeight: 0,
+                        fillColor: 'red',
+                        fillOpacity: 0.1 + (Math.min(coords.value, 20) / 20) * 0.5,
+                        map: map,
+                        bounds: { south: coords.coordinates1.lat, west: coords.coordinates1.lon, north: coords.coordinates2.lat, east: coords.coordinates2.lon }
+                    });
+                    
+                    areas.push(rectangle);
+                });
+            });
+        };
+        
+        map.addListener('bounds_changed', function () { $scope.drawAreasDelayed(); });
     }
 ]);

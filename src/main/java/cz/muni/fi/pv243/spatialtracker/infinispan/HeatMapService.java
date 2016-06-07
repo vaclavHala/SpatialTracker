@@ -19,14 +19,8 @@ import static java.lang.Math.toIntExact;
 
 @Stateless
 public class HeatMapService {
-    private double latitude;
-    private double longitude;
-
     @Inject
     private CacheProvider cacheProvider;
-
-    @Inject
-    private IssueResource issueResource;
 
     @Inject
     private ObjectMapper json;
@@ -36,10 +30,10 @@ public class HeatMapService {
         Map<String, Heat> help = new HashMap<>();
 
         SpatialFilter filter = json.readValue(rawFilter, SpatialFilter.class);
-        if(filter == null) return null;
-
-        latitude = (filter.latMax() - filter.latMin()) / 100;
-        longitude = (filter.lonMin() - filter.lonMax()) / 100;
+        
+        if(filter == null) {
+            return null;
+        }
 
         cacheProvider.getIssueCache().values().stream().filter(issue ->
                 issue.coords().latitude() <= filter.latMax() &&
@@ -47,20 +41,22 @@ public class HeatMapService {
                         issue.coords().longitude() <= filter.lonMax() &&
                         issue.coords().longitude() >= filter.lonMin())
                 .forEach(issue -> {
-                    int x = toIntExact(round((issue.coords().longitude() - filter.lonMax()) / longitude));
-                    int y = toIntExact(round((filter.latMax() - issue.coords().latitude()) / latitude));
+                    int x = toIntExact(round(issue.coords().longitude() * 100));
+                    int y = toIntExact(round(issue.coords().latitude() * 100));
+                    
                     Heat h = help.get(x + ", " + y);
+                    
                     if (h == null) {
-                        h = new Heat(
-                                new Coordinates(filter.lonMax() + longitude * x, filter.latMax() - latitude * y),
-                                new Coordinates(filter.lonMax() + longitude * x + 1, filter.latMax() - latitude * y + 1),
-                                1);
+                        h = new Heat(new Coordinates(y / 100d, x / 100d), new Coordinates((y + 1) / 100d, (x + 1) / 100d), 1);
+                        
                         help.put(x + ", " + y, h);
                     } else {
                         h.value(h.value() + 1);
                     }
                 });
+        
         help.forEach((k, v) -> result.add(v));
+        
         return result;
     }
 }
