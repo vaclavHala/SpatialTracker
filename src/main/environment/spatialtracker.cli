@@ -1,0 +1,22 @@
+connect
+ 
+/subsystem=messaging-activemq/server=default/jms-queue=IssueStatusUpdatedQueue:add(entries=[queue/issuesStatusUpdated java:/jms/queue/issuesStatusUpdated])
+
+reload
+
+/subsystem=messaging-activemq/server=default/jms-queue=testQueue:add(entries=[queue/test java:jboss/exported/jms/queue/test])
+
+reload
+
+/subsystem=security/security-domain=spatial-tracker:add(cache-type=default)
+ 
+reload
+ 
+/subsystem=security/security-domain=spatial-tracker/authentication=classic: \
+    add( \
+        login-modules=[{ \
+            "code"=>"cz.muni.fi.pv243.spatialtracker.users.redmine.RedmineLoginModule", \
+            "flag"=>"required" \
+        }])
+ 
+reload
