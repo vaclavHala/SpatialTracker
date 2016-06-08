@@ -8,6 +8,8 @@ Configure the following dependencies:
 2. [Security](https://raw.githubusercontent.com/vaclavHala/SpatialTracker/master/src/main/environment/Security_HOWTO)
 3. [JMS](https://raw.githubusercontent.com/vaclavHala/SpatialTracker/master/src/main/environment/JMS_HOWTO)
 
+Security and JMS can be configured via [JBoss CLI script](https://raw.githubusercontent.com/vaclavHala/SpatialTracker/master/src/main/environment/spatialtracker.cli)
+
 ## Slides for presentation 
 - [Google Slides](https://docs.google.com/presentation/d/1052GXn6KAJqO-YDw8ptgLjD-1GnPI0DUsgsIJQIGXrw/edit?usp=sharing)
   (Feel free to add better title page. Programmer art...)
