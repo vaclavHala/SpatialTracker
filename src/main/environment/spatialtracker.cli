@@ -4,7 +4,7 @@ connect
 
 reload
 
-/subsystem=messaging-activemq/server=default/jms-queue=testQueue:add(entries=[queue/test java:jboss/exported/jms/queue/test])
+/subsystem=messaging-activemq/server=default/jms-queue=TestQueue:add(entries=[queue/test java:jboss/exported/jms/queue/test])
 
 reload
 
